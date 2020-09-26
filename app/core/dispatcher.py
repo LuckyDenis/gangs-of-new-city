@@ -18,15 +18,19 @@ class BaseTrain:
     async def move(self):
         pass
 
+    def get_result(self):
+        pass
+
 
 class NewUserTrain(BaseTrain):
     def __init__(self, data):
         self.train = {
-            "stations": {
-                "get_user": st.GetUserSt,
-                "user_is_find": st.DataIsFound
-            },
+            "stations": [
+                st.GetUserSt,
+                st.IsThereUserSt,
+                st.CreatingUserSt,
+            ],
             "__state__": self.__state__,
-            "data": data
+            "data": data,
+            "answers": []
         }
-
