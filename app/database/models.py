@@ -43,7 +43,7 @@ class User(db.Model):
     is_tester = sa.Column(sa.Boolean(), default=False)
     is_blocked = sa.Column(sa.Boolean(), default=False)
 
-    @db.bake
+    # @db.bake
     def _get(cls):
         return cls.model.query.where(
             cls.model.id == db.bindparam("uid"))

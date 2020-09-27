@@ -3,7 +3,7 @@
 import app.database as db
 from logging import getLogger
 from .statuses import Statuses as Code
-from asyncpg import PostgresConnectionError
+
 
 logger = getLogger(__name__)
 
@@ -13,34 +13,45 @@ class BaseSt:
     :param: __state__: словарь, в котором храниться информация,
     о состоянии обработки запроса.
     """
-    def __init__(self, train: dict):
+    def __init__(self, train):
         self.train = train
         logger.debug(self.train)
 
-    def __getitem__(self, key: [int, str]) -> [any, bool]:
-        return self.train.get(key, False)
-
-    def __setitem__(self, key: [int, str], value: any):
-        self.train[key] = value
-
     @property
-    def status(self) -> str:
-        return self["__state__"]["status"]
+    def status(self):
+        return self.train.status
 
     @status.setter
-    def status(self, code: str) -> None:
-        self["__state__"]["status"] = code
+    def status(self, status):
+        self.train.status = status
 
     @property
-    def error(self) -> str:
-        return self["__state__"]["error"]
+    def exception(self):
+        return self.train.exception
 
-    @error.setter
-    def error(self, e: Exception) -> None:
-        self["__state__"]["error"] = e
+    @exception.setter
+    def exception(self, err):
+        self.train.exception = err
+
+    @property
+    def answers(self):
+        return self.train.answers
+
+    @answers.setter
+    def answers(self, answer):
+        self.train.answers = answer
 
     async def traveled(self) -> dict:
         raise NotImplemented
+
+    async def execution(self, query_name):
+        result = {}
+        try:
+            result = await db.User.get(self.train.queries[query_name])
+        except Exception as e:
+            self.exception = e
+            self.status = Code.DATABASE_ERROR
+        return result
 
 
 class GetUserSt(BaseSt):
@@ -52,27 +63,22 @@ class GetUserSt(BaseSt):
     Для работы нужна информация по пути ['data']['id']
     Добавляет информацию о пользователе по ключу: ['user_state'].
     """
-    async def get_user(self) -> None:
-        user_state = {}
-        try:
-            user_state = await db.User.get(props=self['user_props'])
-        except PostgresConnectionError as e:
-            self.error = e
-            self.status = Code.DATABASE_ERROR
-        self["user_state"] = user_state
-
-    def add_props(self):
-        self["user_props"] = {
-            "id": self["data"]["id"]
+    def storage_query(self):
+        query_name = "get_user"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"]
         }
+        return query_name
 
     async def traveled(self) -> dict:
-        self.add_props()
-        await self.get_user()
+        user = await self.execution(self.storage_query())
+        self.train.states["user"] = user
 
         if self.status is Code.DATABASE_ERROR:
             self.status = Code.EMERGENCY_STOP
+            return self.train
 
+        self.status = Code.GET_USER
         return self.train
 
 
@@ -86,44 +92,46 @@ class IsThereUserSt(BaseSt):
     и уходим с маршрута.
     """
     async def add_out_answer(self):
-        pass
+        self.train.status = Code.USER_IS_THERE
+        self.answers = "нашли пользователя"
 
     async def traveled(self) -> dict:
-        user_state = self["user_state"]
-        if user_state:  # Пользователь существует
+        states = self.train.states
+        if states['user']:  # Пользователь существует
             await self.add_out_answer()
             self.status = Code.EMERGENCY_STOP
+            return self.train
 
+        self.status = Code.USER_IS_NOT_THERE
         return self.train
 
 
 class CreatingUserSt(BaseSt):
     async def add_out_answer(self):
-        pass
+        self.train.answers = 'создали пользователя'
 
-    async def create_user(self):
-        pass
-
-    def add_props(self):
-        self["props"] = {
-            "id": self["data"]["id"],
-            "language": self["data"]["language"],
-            "visited": self["data"]["datetime"],
-            "registered": self["data"]["datetime"],
+    def storage_query(self):
+        query_name = "create_user"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"],
+            "language": self.train.data["language"],
+            "visited": self.train.data["datetime"],
+            "registered": self.train.data["datetime"],
         }
+        return query_name
 
     async def traveled(self) -> dict:
-        self.add_props()
-        await self.create_user()
-
+        await self.execution(self.storage_query())
         if self.status is Code.DATABASE_ERROR:
             self.status = Code.EMERGENCY_STOP
             return self.train
 
+        self.status = Code.CREATED_USER
         await self.add_out_answer()
         return self.train
 
 
+'''
 class UserIsBlockedSt(BaseSt):
     async def add_out_answer(self):
         pass
@@ -172,3 +180,5 @@ class UserHasBonusSt(BaseSt):
 
     async def traveled(self) -> dict:
         pass
+'''
+

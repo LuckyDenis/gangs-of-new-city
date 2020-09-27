@@ -1,6 +1,6 @@
 # coding: utf8
 
-from .querys import User
+from .queries import User
 from .models import db
 
 
