@@ -1,8 +1,8 @@
 # coding: utf8
 
-from .dispatcher import NewUserTrain
+from .dispatcher import NewUserItinerary
 
 __all__ = [
-    "NewUserTrain"
+    "NewUserItinerary"
 ]
 
