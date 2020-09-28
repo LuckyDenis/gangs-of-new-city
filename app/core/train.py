@@ -28,7 +28,7 @@ class Train:
             "answers": list(),
             "__state__": {
                 "exception": None,
-                "statuses": [Code.IN_THE_WAY],
+                "statuses": [Code.IN_THE_WAY]
             }
         }
 

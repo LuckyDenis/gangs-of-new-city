@@ -5,6 +5,7 @@ from app.core import stations as st
 from app.core.statuses import Statuses as Code
 from app.core.train import Train
 
+from pprint import pp
 import uvloop
 from datetime import datetime
 logger = getLogger(__name__)
@@ -52,11 +53,13 @@ async def main():
     itinerary = NewUserItinerary({
         "id": 123456789,
         "language": "en",
-        "datetime": datetime.now()
+        "datetime": datetime.now(),
+        "referral_link": "123123123",
+
     })
     await itinerary.move()
     train = itinerary.train
-    print(train.payload)
+    pp(train.payload)
 
 
 if __name__ == "__main__":
