@@ -41,13 +41,14 @@ class BaseSt:
     def answers(self, answer):
         self.train.answers = answer
 
-    async def traveled(self) -> dict:
+    async def traveled(self):
         raise NotImplemented
 
-    async def execution(self, query_name):
+    async def execution(self, storage_query, query_name):
         result = {}
         try:
-            result = await db.User.get(self.train.queries[query_name])
+            result = await storage_query(
+                self.train.queries[query_name])
         except Exception as e:
             self.exception = e
             self.status = Code.DATABASE_ERROR
@@ -63,15 +64,20 @@ class GetUserSt(BaseSt):
     Для работы нужна информация по пути ['data']['id']
     Добавляет информацию о пользователе по ключу: ['user_state'].
     """
-    def storage_query(self):
+    def query_data(self):
         query_name = "get_user"
         self.train.queries[query_name] = {
             "id": self.train.data["id"]
         }
         return query_name
 
-    async def traveled(self) -> dict:
-        user = await self.execution(self.storage_query())
+    @staticmethod
+    def storage_query():
+        return db.User.get
+
+    async def traveled(self):
+        user = await self.execution(
+            self.storage_query(), self.query_data())
         self.train.states["user"] = user
 
         if self.status is Code.DATABASE_ERROR:
@@ -110,7 +116,7 @@ class CreatingUserSt(BaseSt):
     async def add_out_answer(self):
         self.train.answers = 'создали пользователя'
 
-    def storage_query(self):
+    def query_data(self):
         query_name = "create_user"
         self.train.queries[query_name] = {
             "id": self.train.data["id"],
@@ -120,8 +126,15 @@ class CreatingUserSt(BaseSt):
         }
         return query_name
 
+    @staticmethod
+    def storage_query():
+        return db.User.create
+
     async def traveled(self) -> dict:
-        await self.execution(self.storage_query())
+        user = await self.execution(
+            self.storage_query(), self.query_data())
+        self.train.states["user"] = user
+
         if self.status is Code.DATABASE_ERROR:
             self.status = Code.EMERGENCY_STOP
             return self.train

@@ -3,7 +3,6 @@
 from logging import getLogger
 from . import models as m
 
-
 logger = getLogger(__name__)
 
 
@@ -12,14 +11,23 @@ class User:
     skip_key = ["id"]
 
     @classmethod
-    async def get(cls, query: dict) -> dict:
+    async def get(cls, query):
         # user = await m.User.get(props)
-        return {'id': query['id']}
+        return {}  # {'id': query['id']}
 
     @classmethod
-    async def create(cls, query: dict) -> dict:
+    async def create(cls, query):
         return query
 
     @classmethod
-    async def change(cls, query: dict) -> dict:
+    async def change(cls, query):
         pass
+
+
+class Referral:
+    model = None
+    skip_keys = ["id"]
+
+    @classmethod
+    async def create(cls, query):
+        return query

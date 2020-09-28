@@ -125,3 +125,7 @@ dmypy.json
 
 # idea
 /.idea/
+
+
+# developed config
+/app/configuration/developed.json
