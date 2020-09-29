@@ -1,18 +1,25 @@
 # coding: utf8
+"""
+Использования подходов маленьких классов
+содержащих какую-то одну логику упрощает
+поддержку и повторное использования кода.
+
+Например для вывода данных информации о
+состоянии кошелька персонажа используется
+класс `GetWalletSt` и этот же класс можно
+переиспользовать для операции купли/продажи.
+Принцип SOLID.
+"""
+
+from logging import getLogger
 
 import app.database as db
-from logging import getLogger
 from .statuses import Statuses as Code
-
 
 logger = getLogger(__name__)
 
 
 class BaseSt:
-    """
-    :param: __state__: словарь, в котором храниться информация,
-    о состоянии обработки запроса.
-    """
     def __init__(self, train):
         self.train = train
         logger.debug(self.train)
@@ -62,7 +69,7 @@ class GetUserSt(BaseSt):
 
     Контракт:
     Для работы нужна информация по пути ['data']['id']
-    Добавляет информацию о пользователе по ключу: ['user_state'].
+    Добавляет информацию о пользователе по ключу: ['state']['user'].
     """
     def query_data(self):
         query_name = "get_user"
@@ -93,13 +100,13 @@ class IsThereUserSt(BaseSt):
     Проверка, что пользователя нет в базе.
 
     Контракт:
-    Для проверки необходима информация по пути ['user_state']
-    Если пользователь не обнаружен, добавляем ответ в спиоск views
+    Для проверки необходима информация по пути ['state']['user']
+    Если пользователь обнаружен, добавляем ответ в список answers
     и уходим с маршрута.
     """
     async def add_out_answer(self):
         self.train.status = Code.USER_IS_THERE
-        self.answers = "нашли пользователя"
+        self.answers = "нашли пользователя"  # todo: данные из модуля `views`
 
     async def traveled(self) -> dict:
         states = self.train.states
@@ -114,7 +121,8 @@ class IsThereUserSt(BaseSt):
 
 class CreatingUserSt(BaseSt):
     async def add_out_answer(self):
-        self.train.answers = 'создали пользователя'
+        self.status = Code.CREATED_USER
+        self.train.answers = 'создали пользователя'   # todo: данные из модуля `views`
 
     def query_data(self):
         query_name = "create_user"
@@ -139,7 +147,6 @@ class CreatingUserSt(BaseSt):
             self.status = Code.EMERGENCY_STOP
             return self.train
 
-        self.status = Code.CREATED_USER
         await self.add_out_answer()
         return self.train
 

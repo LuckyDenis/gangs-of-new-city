@@ -1,10 +1,10 @@
 # coding: utf8
 
 import errno
-import sys
 import json
-from python_json_config import ConfigBuilder
+import sys
 
+from python_json_config import ConfigBuilder
 
 builder = ConfigBuilder()
 

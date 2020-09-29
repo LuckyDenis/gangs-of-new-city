@@ -1,5 +1,6 @@
 # coding: utf8
 from logging import getLogger
+
 from .statuses import Statuses as Code
 
 logger = getLogger(__name__)
@@ -11,9 +12,9 @@ class Train:
     в зоне `core`. Используется классами порожденными классом
     `dispatcher.BaseItinerary`.
 
-    :param data (dict) содержит баззовую информацию от запроса
+    :param data (dict) содержит базовую информацию от запроса
     из модуля `controllers.handlers`. Используется словарь, как
-    стандартный тип python, для снижения связаностей модулей
+    стандартный тип python, для снижения связанностей модулей
     системы.
     Пример: { 'timestamp': 123456789, 'user_id': 123456789 }
 

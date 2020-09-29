@@ -1,10 +1,9 @@
 # coding: utf8
 
-import sqlalchemy as sa
-
 from logging import getLogger
-from gino import Gino
 
+import sqlalchemy as sa
+from gino import Gino
 
 logger = getLogger(__name__)
 

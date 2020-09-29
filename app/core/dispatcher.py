@@ -1,13 +1,15 @@
 # coding: utf8
 
+from datetime import datetime
 from logging import getLogger
+from pprint import pp
+
+import uvloop
+
 from app.core import stations as st
 from app.core.statuses import Statuses as Code
 from app.core.train import Train
 
-from pprint import pp
-import uvloop
-from datetime import datetime
 logger = getLogger(__name__)
 
 
@@ -17,6 +19,14 @@ class BaseItinerary:
         self.data_has_required_keys()
 
     async def move(self):
+        """
+        Перемещаемся от станции к станции, пока не дойдем
+        до последней или не получим сообщение
+        `core.statuses.EMERGENCE_STOP`. Входе движения
+        получаем, обрабатываем, сохраняем данные для ответа
+        пользователю.
+        :return: None
+        """
         for station in self.stations():
             if self.train.status == Code.EMERGENCY_STOP:
                 break
@@ -31,13 +41,41 @@ class BaseItinerary:
         return self.train.answers
 
     def stations(self):
+        """
+        Возращает список классов порожденных от класса
+        `core.stations.BaseSt`. Используется для сбора и
+        обработки информации сообщения пользователя.
+        Подробней о мотивации в модуле `core.stations`.
+        :return: [BaseSt]
+        """
         raise NotImplemented
 
     def required_keys(self):
+        """
+        Список ключей которые должные быть обезательно
+        во входном словаре `data`.
+        :return: [str, int]
+        todo:
+        Подумать о том, являются ли данные которые
+        передаются в класс доверительными в плане
+        типов, если нет то добавить валидацию.
+        Например: check_data = [
+            {"key": "id", "type": int},
+            {"key": "datetime", "type": datetime}
+        ] или https://pypi.org/project/schema/
+        """
         raise NotImplemented
 
 
 class NewUserItinerary(BaseItinerary):
+    """
+    :param data: {
+        "id": user id,
+        "language": database.fixture.Language,
+        "datetime": datetime.datetime,
+        "referral_link": referral link
+    }
+    """
     def required_keys(self):
         return ["id", "language", "datetime"]
 
@@ -55,7 +93,6 @@ async def main():
         "language": "en",
         "datetime": datetime.now(),
         "referral_link": "123123123",
-
     })
     await itinerary.move()
     train = itinerary.train
