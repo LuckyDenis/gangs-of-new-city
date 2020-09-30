@@ -51,3 +51,6 @@ class User(db.Model):
     async def get(cls, props: dict):
         return await cls._get.one_or_none(uid=props["uid"])
 
+
+class Referral(db.Model):
+    __tablename__ = "referral"
