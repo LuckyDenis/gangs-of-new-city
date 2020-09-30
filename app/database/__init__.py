@@ -1,10 +1,14 @@
 # coding: utf8
 
 from .queries import User
+from .queries import Referral
+from .queries import Hero
 from .models import db
 
 
 __all__ = [
+    "db",
     "User",
-    "db"
+    "Referral",
+    "Hero",
 ]

@@ -80,10 +80,31 @@ class NewUserItinerary(BaseItinerary):
         return ["id", "language", "datetime"]
 
     def stations(self):
+        """
+        Сначало создам пользователя, потом обработываем
+        пригласившего.
+        """
         return [
             st.GetUserSt,
             st.IsThereUserSt,
-            st.CreatingUserSt
+            st.CreatingUserSt,
+            st.UserHasReferralIdSt,
+            st.GetInviterSt,
+            st.IsThereInviterSt,
+            st.UserIsInviterSt,
+            st.AddReferralDataSt
+        ]
+
+
+class NewHeroItinerary(BaseItinerary):
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        return [
+            st.GetUserSt,
+            st.UserIsBlockedSt,
+
         ]
 
 
@@ -92,7 +113,7 @@ async def main():
         "id": 123456789,
         "language": "en",
         "datetime": datetime.now(),
-        "referral_link": "123123123",
+        "referral_id": 123123123,
     })
     await itinerary.move()
     train = itinerary.train

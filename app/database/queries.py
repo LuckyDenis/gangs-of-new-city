@@ -48,6 +48,19 @@ class User:
         pass
 
 
+class Hero:
+    model = None
+    skip_keys = ["id"]
+
+    @classmethod
+    def get(cls, query):
+        return {}
+
+    @classmethod
+    def create(cls, query):
+        return query
+
+
 class Referral:
     model = None
     skip_keys = ["id"]
@@ -55,3 +68,7 @@ class Referral:
     @classmethod
     async def create(cls, query):
         return query
+
+    @classmethod
+    async def get(cls, query):
+        return {"id": 123123123}
