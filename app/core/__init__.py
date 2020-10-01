@@ -5,4 +5,3 @@ from .dispatcher import NewUserItinerary
 __all__ = [
     "NewUserItinerary"
 ]
-

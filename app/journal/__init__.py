@@ -20,7 +20,8 @@
 Так же для корректной работы, функции должны быть импортированы
 в область видимости, где происходит инициализация логгера.
 
-Подробнее: https://docs.python.org/3.6/library/logging.config.html#logging.config.dictConfig
+Подробнее:
+https://docs.python.org/3.6/library/logging.config.html#logging.config.dictConfig
 """
 
 from logging import config
