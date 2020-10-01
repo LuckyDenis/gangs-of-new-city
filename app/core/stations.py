@@ -62,6 +62,32 @@ class BaseSt:
         return result
 
 
+class StartRailwayDepotSt(BaseSt):
+    """
+    Класс служит для обозначения начала пути,
+    что бы не было, не очевидного добавления статуса
+    `code.statuses.Statuses.IN_THE_WAY`. Наличие статуса
+    необходимо для проверки коректности прохождения станций.
+    Это требование `core.dispatcher.BaseItinerary.move`.
+    todo:
+    В этот класс можно встроить старт метрики `timeit`.
+    """
+    async def traveled(self):
+        self.status = Code.IN_THE_WAY
+        return self.train
+
+
+class FinishRailwayDepotSt(BaseSt):
+    """
+    Класс служит для обозначения конца пути,
+    todo:
+    В этот класс можно встроить финиш метрики `timeit`.
+    """
+    async def traveled(self):
+        self.status = Code.FINISHED
+        return self.train
+
+
 class GetUserSt(BaseSt):
     """
     Получаем пользоватя из базы, если пользователя нет -
@@ -103,14 +129,14 @@ class IsThereUserSt(BaseSt):
     и уходим с маршрута.
 
     Контракт:
-    Обязательные данные: ['state']['user']
+    Обязательные данные: ['states']['user']
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
         self.train.status = Code.USER_IS_THERE
         self.answers = "нашли пользователя"  # todo: данные из модуля `views`
 
-    async def traveled(self) -> dict:
+    async def traveled(self):
         user = self.train.states['user']
         if user:  # Пользователь существует
             await self.add_out_answer()
@@ -133,8 +159,9 @@ class CreatingUserSt(BaseSt):
     Добавленные данные: ['states']['user']
     """
     async def add_out_answer(self):
+        # todo: данные из модуля `views`
         self.status = Code.CREATED_USER
-        self.train.answers = 'создали пользователя'   # todo: данные из модуля `views`
+        self.train.answers = 'создали пользователя'
 
     def query_data(self):
         query_name = "create_user"
@@ -384,4 +411,3 @@ class UserHasBonusSt(BaseSt):
     async def traveled(self) -> dict:
         pass
 '''
-

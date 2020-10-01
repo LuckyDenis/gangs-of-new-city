@@ -28,9 +28,9 @@ class BaseItinerary:
         :return: None
         """
         for station in self.stations():
+            await station(self.train).traveled()
             if self.train.status == Code.EMERGENCY_STOP:
                 break
-            await station(self.train).traveled()
 
     def data_has_required_keys(self):
         for key in self.required_keys():
@@ -73,11 +73,11 @@ class NewUserItinerary(BaseItinerary):
         "id": user id,
         "language": database.fixture.Language,
         "datetime": datetime.datetime,
-        "referral_link": referral link
+        "referral_id": referral id
     }
     """
     def required_keys(self):
-        return ["id", "language", "datetime"]
+        return ["id", "language", "datetime", "referral_id"]
 
     def stations(self):
         """
@@ -85,6 +85,7 @@ class NewUserItinerary(BaseItinerary):
         пригласившего.
         """
         return [
+            st.StartRailwayDepotSt,
             st.GetUserSt,
             st.IsThereUserSt,
             st.CreatingUserSt,
@@ -92,7 +93,8 @@ class NewUserItinerary(BaseItinerary):
             st.GetInviterSt,
             st.IsThereInviterSt,
             st.UserIsInviterSt,
-            st.AddReferralDataSt
+            st.AddReferralDataSt,
+            st.FinishRailwayDepotSt
         ]
 
 
