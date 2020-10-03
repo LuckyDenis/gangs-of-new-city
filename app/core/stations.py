@@ -48,8 +48,11 @@ class BaseSt:
     def answers(self, answer):
         self.train.answers = answer
 
+    async def add_exception_answer(self):
+        self.train.answers = "что-то пошло не так, сообщите нам об этом"
+
     async def traveled(self):
-        raise NotImplemented
+        raise NotImplementedError
 
     async def execution(self, storage_query, query_name):
         result = {}
@@ -59,6 +62,8 @@ class BaseSt:
         except Exception as e:
             self.exception = e
             self.status = Code.DATABASE_ERROR
+            await self.add_exception_answer()
+
         return result
 
 
@@ -121,7 +126,7 @@ class GetUserSt(BaseSt):
         return self.train
 
 
-class IsThereUserSt(BaseSt):
+class IsNewUserSt(BaseSt):
     """
     Проверка, что пользователя нет в базе.
 
@@ -133,7 +138,7 @@ class IsThereUserSt(BaseSt):
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
-        self.train.status = Code.USER_IS_THERE
+        self.train.status = Code.USER_IS_NOT_NEW
         self.answers = "нашли пользователя"  # todo: данные из модуля `views`
 
     async def traveled(self):
@@ -143,11 +148,11 @@ class IsThereUserSt(BaseSt):
             self.status = Code.EMERGENCY_STOP
             return self.train
 
-        self.status = Code.USER_IS_NOT_THERE
+        self.status = Code.USER_IS_NEW
         return self.train
 
 
-class CreatingUserSt(BaseSt):
+class UserCreateSt(BaseSt):
     """
     Создаем нового пользователя.
 
@@ -160,7 +165,7 @@ class CreatingUserSt(BaseSt):
     """
     async def add_out_answer(self):
         # todo: данные из модуля `views`
-        self.status = Code.CREATED_USER
+        self.status = Code.USER_CREATE
         self.train.answers = 'создали пользователя'
 
     def query_data(self):
@@ -177,7 +182,7 @@ class CreatingUserSt(BaseSt):
     def storage_query():
         return db.User.create
 
-    async def traveled(self) -> dict:
+    async def traveled(self):
         user = await self.execution(
             self.storage_query(), self.query_data())
         self.train.states["user"] = user
@@ -190,7 +195,7 @@ class CreatingUserSt(BaseSt):
         return self.train
 
 
-class UserHasReferralIdSt(BaseSt):
+class DoesUserHaveReferralIdSt(BaseSt):
     """
     Проверка наличия пригласившиего пользователя.
     Если такого пользователя нет, то дальше
@@ -204,9 +209,10 @@ class UserHasReferralIdSt(BaseSt):
     async def traveled(self):
         referral_id = self.train.data["referral_id"]
         if not referral_id:
-            self.status = Code.USER_NOT_REFERRAL_ID
+            self.status = Code.USER_DOSE_NOT_HAVE_REFERRAL_ID
             self.status = Code.EMERGENCY_STOP
             return self.train
+        self.status = Code.USER_HAS_REFERRAL_ID
         return self.train
 
 
@@ -223,13 +229,13 @@ class GetInviterSt(BaseSt):
     def query_data(self):
         query_name = "get_inviter"
         self.train.queries[query_name] = {
-            "referral_id": self.train.data["referral_id"]
+            "id": self.train.data["referral_id"]
         }
         return query_name
 
     @staticmethod
     def storage_query():
-        return db.Referral.get
+        return db.User.get
 
     async def traveled(self):
         inviter = await self.execution(
@@ -240,7 +246,7 @@ class GetInviterSt(BaseSt):
             self.status = Code.EMERGENCY_STOP
             return self.train
 
-        self.status = Code.GET_USER
+        self.status = Code.GET_INVITER
         return self.train
 
 
@@ -327,7 +333,33 @@ class AddReferralDataSt(BaseSt):
         return self.train
 
 
-class UserIsBlockedSt(BaseSt):
+class IsThereUserSt(BaseSt):
+    """
+    Проверка, что пользователя нет в базе.
+
+    Если пользователь не обнаружен, добавляем ответ в список answers
+    и уходим с маршрута.
+
+    Контракт:
+    Обязательные данные: ['states']['user']
+    Добавленные данные: ['answers']['answer'] или None
+    """
+    async def add_out_answer(self):
+        self.train.status = Code.USER_IS_NOT_THERE
+        self.answers = "не нашли пользователя"
+
+    async def traveled(self):
+        user = self.train.states['user']
+        if not user:  # Пользователь не существует
+            await self.add_out_answer()
+            self.status = Code.EMERGENCY_STOP
+            return self.train
+
+        self.status = Code.USER_IS_THERE
+        return self.train
+
+
+class IsUserBlockedSt(BaseSt):
     """
     Проверяем права на доступ к приложению.
 
@@ -336,20 +368,29 @@ class UserIsBlockedSt(BaseSt):
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
-        self.status = Code.USER_IS_BLOCKED
         self.answers = "Пользователь заблокирован"
 
-    async def traveled(self) -> dict:
-        user = self.train.status["user"]
+    async def traveled(self):
+        user = self.train.states["user"]
         if user and user["is_blocked"]:
-            await self.add_out_answer()
+            self.status = Code.USER_IS_BLOCKED
             self.status = Code.EMERGENCY_STOP
+            await self.add_out_answer()
+            return self.train
 
+        self.status = Code.USER_IS_NOT_BLOCKED
         return self.train
 
 
 class GetHeroSt(BaseSt):
-    def query_name(self):
+    """
+    Получение героя персонажа.
+
+    Контракт:
+    Обезательные данные: ['data']['id']
+    Добавленные данные: ['states']['hero']
+    """
+    def query_data(self):
         query_name = "get_hero"
         self.train.queries[query_name] = {
             "id": self.train.data["id"]
@@ -362,7 +403,7 @@ class GetHeroSt(BaseSt):
 
     async def traveled(self):
         hero = await self.execution(
-            self.storage_query(), self.query_name()
+            self.storage_query(), self.query_data()
         )
         self.train.states["hero"] = hero
 
@@ -374,40 +415,114 @@ class GetHeroSt(BaseSt):
         return self.train
 
 
-'''
-class UserIsDeveloperSt(BaseSt):
-    async def add_out_answer(self):
-        pass
+class IsNewHeroSt(BaseSt):
+    """
+    Проверка на то, имеет ли пользователь уже героя.
 
-    async def traveled(self) -> dict:
-        user_state = self["user_state"]
-        if user_state and not user_state["is_developer"]:
-            await self.add_out_answer()
+    Контракт:
+    Обезательные данные: ['states']['hero']
+    Добавленные данные: ['answers']['answer'] или None
+    """
+
+    async def add_out_answers(self):
+        self.train.answers = "у вас уже есть герой"
+
+    async def traveled(self):
+        hero = self.train.states['hero']
+        if hero:
+            await self.add_out_answers()
+            self.status = Code.HERO_IS_NOT_NEW
             self.status = Code.EMERGENCY_STOP
+            return self.train
 
+        self.status = Code.HERO_IS_NEW
         return self.train
 
 
-class UserIsTesterSt(BaseSt):
-    async def traveled(self) -> dict:
-        user_state = self["user_state"]
-        if user_state and user_state["is_tester"]:
-            self.status = Code.USER_IS_TESTER
+class IsNewHeroUniqueSt(BaseSt):
+    """
+    Проверка уникальности имени героя (имеет ли, кто-то еще
+    героя с таким же именем).
+
+    Контракт:
+    Обезательные данные: ['data']['hero_nick']
+    Добавленные данные: ['states']['is_hero']
+
+    todo:
+    Подумать: Надо разивать на два класса или это
+    все таки одно логическое действие.
+    """
+    async def add_out_answers(self):
+        self.train.answers = "не уникальное имя персонажа"
+
+    def query_data(self):
+        query_name = "check_hero_unique"
+        self.train.queries[query_name] = {
+            "hero_nick": self.train.data["hero_nick"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.Hero.get_by_nick
+
+    async def traveled(self):
+        is_hero = await self.execution(
+            self.storage_query(), self.query_data()
+        )
+        self.train.states["is_hero"] = is_hero
+
+        if self.status is Code.DATABASE_ERROR:
+            self.status = Code.EMERGENCY_STOP
+            return self.train
+
+        if is_hero:
+            self.status = Code.NEW_HERO_IS_NOT_UNIQUE
+            self.status = Code.EMERGENCY_STOP
+            await self.add_out_answers()
+            return self.train
+
+        self.status = Code.NEW_HERO_IS_UNIQUE
         return self.train
 
 
-class UserHasHeroSt(BaseSt):
-    async def traveled(self) -> dict:
-        user_state = self["user_state"]
-        if user_state and user_state["has_hero"]:
-            self.status = Code.USER_HAS_NOT_HERO
+class NewHeroCreateSt(BaseSt):
+    """
+    Создаем нового героя.
+
+    Контракт:
+    Обезательные данные:
+        ['data']['id']
+        ['data']['hero_nick']
+    Добавленные данные:
+        ['states']['new_hero']
+        ['answers']['answer']
+    """
+    async def add_out_answers(self):
+        self.train.answers = "создан новый герой"
+
+    def query_data(self):
+        query_name = "create_new_hero"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"],
+            "hero_nick": self.train.data["hero_nick"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.Hero.create
+
+    async def traveled(self):
+        new_hero = await self.execution(
+            self.storage_query(), self.query_data()
+        )
+        self.train.states['new_hero'] = new_hero
+
+        if self.status is Code.DATABASE_ERROR:
+            self.status = Code.EMERGENCY_STOP
+            return self.train
+
+        await self.add_out_answers()
+        self.status = Code.NEW_HERO_CREATE
         return self.train
-
-
-class UserHasBonusSt(BaseSt):
-    async def add_answer(self):
-        pass
-
-    async def traveled(self) -> dict:
-        pass
-'''

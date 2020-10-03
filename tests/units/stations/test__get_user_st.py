@@ -21,10 +21,19 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
+async def test__traveled_with_error(train, monkeypatch):
+    monkeypatch.setattr(GetUserSt, "execution", fake_execution_with_error)
+    await GetUserSt(train).traveled()
+    assert train.status == Code.EMERGENCY_STOP
+
+
+@pytest.mark.unit
+@pytest.mark.core
+@pytest.mark.stations
 async def test__query_data(train):
     query_name = GetUserSt(train).query_data()
     query_data = train.queries[query_name]
-    assert query_data.get("id", False)
+    assert query_data.get("id")
 
 
 @pytest.mark.unit
@@ -34,12 +43,3 @@ async def test__storage_query(train):
     storage_query = GetUserSt(train).storage_query()
     bound_method = User.get
     assert storage_query == bound_method
-
-
-@pytest.mark.unit
-@pytest.mark.core
-@pytest.mark.stations
-async def test__traveled_with_error(train, monkeypatch):
-    monkeypatch.setattr(GetUserSt, "execution", fake_execution_with_error)
-    await GetUserSt(train).traveled()
-    assert train.status == Code.EMERGENCY_STOP

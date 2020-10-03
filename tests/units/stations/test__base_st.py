@@ -92,3 +92,11 @@ async def test__execution_with_error(base_st: BaseSt, data: dict):
 
     statuses = base_st.train["__state__"]["statuses"]
     assert statuses == CORRECT_STATUSES
+
+
+@pytest.mark.unit
+@pytest.mark.core
+@pytest.mark.stations
+async def test__traveled_not_realize(train):
+    with pytest.raises(NotImplementedError):
+        await BaseSt(train).traveled()

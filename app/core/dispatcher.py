@@ -48,7 +48,7 @@ class BaseItinerary:
         Подробней о мотивации в модуле `core.stations`.
         :return: [BaseSt]
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     def required_keys(self):
         """
@@ -64,7 +64,7 @@ class BaseItinerary:
             {"key": "datetime", "type": datetime}
         ] или https://pypi.org/project/schema/
         """
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class NewUserItinerary(BaseItinerary):
@@ -77,7 +77,7 @@ class NewUserItinerary(BaseItinerary):
     }
     """
     def required_keys(self):
-        return ["id", "language", "datetime", "referral_id"]
+        return ["id", "language", "datetime"]
 
     def stations(self):
         """
@@ -87,9 +87,9 @@ class NewUserItinerary(BaseItinerary):
         return [
             st.StartRailwayDepotSt,
             st.GetUserSt,
-            st.IsThereUserSt,
-            st.CreatingUserSt,
-            st.UserHasReferralIdSt,
+            st.IsNewUserSt,
+            st.UserCreateSt,
+            st.DoesUserHaveReferralIdSt,
             st.GetInviterSt,
             st.IsThereInviterSt,
             st.UserIsInviterSt,
@@ -100,13 +100,23 @@ class NewUserItinerary(BaseItinerary):
 
 class NewHeroItinerary(BaseItinerary):
     def required_keys(self):
-        return ["id"]
+        return ["id", "hero_nick"]
 
     def stations(self):
+        """
+        Сначало проеверяем, имеет пользователь героя,
+        потом проверяем уникальность ника героя.
+        """
         return [
+            st.StartRailwayDepotSt,
             st.GetUserSt,
-            st.UserIsBlockedSt,
-
+            st.IsThereUserSt,
+            st.IsUserBlockedSt,
+            st.GetHeroSt,
+            st.IsNewHeroSt,
+            st.IsNewHeroUniqueSt,
+            st.NewHeroCreateSt,
+            st.FinishRailwayDepotSt
         ]
 
 
@@ -115,7 +125,7 @@ async def main():
         "id": 123456789,
         "language": "en",
         "datetime": datetime.now(),
-        "referral_id": 123123123,
+        "referral_id": 123456789,
     })
     await itinerary.move()
     train = itinerary.train
