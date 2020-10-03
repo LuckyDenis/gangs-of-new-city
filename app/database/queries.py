@@ -53,12 +53,18 @@ class Hero:
     skip_keys = ["id"]
 
     @classmethod
-    def get(cls, query):
+    async def get(cls, query):
         return {}
 
     @classmethod
-    def create(cls, query):
+    async def create(cls, query):
         return query
+
+    @classmethod
+    async def get_by_nick(cls, query):
+        return query
+
+
 
 
 class Referral:

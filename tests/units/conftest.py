@@ -5,7 +5,7 @@ from tests.helpers.data import DATA
 from app.core.statuses import Statuses as Code
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def train():
     train = Train(DATA)
     train.status = Code.IN_THE_WAY
