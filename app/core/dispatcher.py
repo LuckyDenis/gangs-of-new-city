@@ -34,8 +34,9 @@ class BaseItinerary:
 
     def data_has_required_keys(self):
         for key in self.required_keys():
-            if not self.train.data.get(key, False):
-                raise AttributeError(f'Key `{key}` is required')
+            if not self.train.data.get(key):
+                return False
+        return True
 
     def get_answers(self):
         return self.train.answers
@@ -69,6 +70,8 @@ class BaseItinerary:
 
 class NewUserItinerary(BaseItinerary):
     """
+    cmd: /start
+
     :param data: {
         "id": user id,
         "language": database.fixture.Language,
@@ -99,6 +102,9 @@ class NewUserItinerary(BaseItinerary):
 
 
 class NewHeroItinerary(BaseItinerary):
+    """
+    cmd: /name "hero"
+    """
     def required_keys(self):
         return ["id", "hero_nick"]
 
@@ -116,6 +122,50 @@ class NewHeroItinerary(BaseItinerary):
             st.IsNewHeroSt,
             st.IsNewHeroUniqueSt,
             st.NewHeroCreateSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
+class GetWalletItinerary(BaseItinerary):
+    """
+    cmd: /wallet
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        """
+        Получаем информацию о кошельке, если кошелек
+        не найден, то подразумеваем, что герой не создан.
+        """
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.IsUserBlockedSt,
+            st.GetWalletSt,
+            st.IsThereWalletSt,
+            st.ViewsWalletSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
+class GetHeroItinerary(BaseItinerary):
+    """
+    cmd: /hero
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.IsUserBlockedSt,
+            st.GetHeroSt,
+            st.IsThereHeroSt,
+            st.ViewsHeroSt,
             st.FinishRailwayDepotSt
         ]
 

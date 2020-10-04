@@ -40,6 +40,13 @@ class Statuses(Enum):
     HERO_IS_NOT_NEW = auto()
     HERO_IS_NEW = auto()
     NEW_HERO_CREATE = auto()
+    GET_WALLET = auto()
+    WALLET_IS_THERE = auto()
+    WALLET_IS_NOT_THERE = auto()
+    HERO_IS_THERE = auto()
+    HERO_IS_NOT_THERE = auto()
+    VIEW_WALLET = auto()
+    VIEW_HERO = auto()
 
     def __repr__(self):
         return self._name_

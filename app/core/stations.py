@@ -9,6 +9,10 @@
 класс `GetWalletSt` и этот же класс можно
 переиспользовать для операции купли/продажи.
 Принцип SOLID.
+
+Записываем данные в словарь `queries`, для
+централизованного хранения информации о запросах
+и данных с которыми работает база данных.
 """
 
 from logging import getLogger
@@ -525,4 +529,120 @@ class NewHeroCreateSt(BaseSt):
 
         await self.add_out_answers()
         self.status = Code.NEW_HERO_CREATE
+        return self.train
+
+
+class GetWalletSt(BaseSt):
+    """
+    Получения информаци о кошельке героя.
+
+    Контракт:
+    Обезаетльные данные: ['data']['id']
+    Добавленные данные: ['states']['wallet']
+    """
+    def query_data(self):
+        query_name = "get_wallet"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.Wallet.get
+
+    async def traveled(self):
+        wallet = await self.execution(
+            self.storage_query(), self.query_data()
+        )
+        self.train.states["wallet"] = wallet
+
+        if self.status is Code.DATABASE_ERROR:
+            self.status = Code.EMERGENCY_STOP
+            return self.train
+
+        self.status = Code.GET_WALLET
+
+
+class IsThereWalletSt(BaseSt):
+    """
+    Отвечает за проверку существование кошелька героя в базе данных.
+    Если кошелька нет, подразумевается, что герой еще не создан.
+
+    Контракт:
+    Обезаетельные данные: ['states']['wallet']
+    Добавленные данные: ['answers']['answer'] или None
+    """
+    async def add_out_answers(self):
+        self.train.answers = "Создайте героя"
+
+    async def traveled(self):
+        wallet = self.train.states["wallet"]
+        if not wallet:
+            await self.add_out_answers()
+            self.status = Code.WALLET_IS_NOT_THERE
+            self.status = Code.EMERGENCY_STOP
+            return self.train
+
+        self.status = Code.WALLET_IS_THERE
+        return self.train
+
+
+class ViewWalletSt(BaseSt):
+    """
+    Отвечает за получение отрендеренного ответа для вывода информации
+    о кошельке героя.
+
+    Контракт:
+    Обезаетельные данные: ['states']['wallet']
+    Добавленные данные: ['answers']['answer']
+    """
+    async def add_out_answers(self):
+        self.train.answers = "кошелек игрока"
+
+    async def traveled(self):
+        await self.add_out_answers()
+        self.status = Code.VIEW_WALLET
+        return self.train
+
+
+class IsThereHeroSt(BaseSt):
+    """
+    Отвечает за проверку существование героя в базе данных.
+    Если героя нет, подразумевается, что он еще не создан.
+
+    Контракт:
+    Обезаетельные данные: ['states']['hero']
+    Добавленные данные: ['answers']['answer'] или None
+    """
+    async def add_out_answers(self):
+        self.train.answers = "Создайте героя"
+
+    async def traveled(self):
+        hero = self.train.states["hero"]
+        if not hero:
+            await self.add_out_answers()
+            self.status = Code.HERO_IS_NOT_THERE
+            self.status = Code.EMERGENCY_STOP
+            return self.train
+
+        self.status = Code.HERO_IS_THERE
+        return self.train
+
+
+class ViewHeroSt(BaseSt):
+    """
+    Отвечает за получение отрендеренного ответа для вывода информации
+    о герое.
+
+    Контракт:
+    Обезаетельные данные: ['states']['hero']
+    Добавленные данные: ['answers']['answer']
+    """
+    async def add_out_answers(self):
+        self.train.answers = "Информация об герои игрока"
+
+    async def traveled(self):
+        await self.add_out_answers()
+        self.status = Code.VIEW_HERO
         return self.train

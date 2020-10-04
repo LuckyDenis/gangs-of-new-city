@@ -3,6 +3,7 @@
 from .queries import User
 from .queries import Referral
 from .queries import Hero
+from .queries import Wallet
 from .models import db
 
 
@@ -11,4 +12,5 @@ __all__ = [
     "User",
     "Referral",
     "Hero",
+    "Wallet",
 ]
