@@ -30,7 +30,8 @@ async def test__traveled(up_train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(up_train, monkeypatch):
     train = up_train
-    monkeypatch.setattr(NewHeroCreateSt, "execution", fake_execution_with_error)
+    monkeypatch.setattr(
+        NewHeroCreateSt, "execution", fake_execution_with_error)
     await NewHeroCreateSt(train).traveled()
 
     STATUSES = [Code.DATABASE_ERROR, Code.EMERGENCY_STOP]

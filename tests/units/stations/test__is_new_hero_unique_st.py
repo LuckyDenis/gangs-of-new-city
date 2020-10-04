@@ -33,7 +33,8 @@ async def test__traveled(up_train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(up_train, monkeypatch):
     train = up_train
-    monkeypatch.setattr(IsNewHeroUniqueSt, "execution", fake_execution_with_error)
+    monkeypatch.setattr(
+        IsNewHeroUniqueSt, "execution", fake_execution_with_error)
     await IsNewHeroUniqueSt(train).traveled()
 
     assert isinstance(train.states['is_hero'], dict)

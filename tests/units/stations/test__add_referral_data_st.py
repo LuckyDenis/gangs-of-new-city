@@ -44,7 +44,8 @@ async def test__traveled(up_train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(up_train, monkeypatch):
     train = up_train
-    monkeypatch.setattr(AddReferralDataSt, "execution", fake_execution_with_error)
+    monkeypatch.setattr(
+        AddReferralDataSt, "execution", fake_execution_with_error)
     await AddReferralDataSt(train).traveled()
 
     assert train.status == Code.EMERGENCY_STOP

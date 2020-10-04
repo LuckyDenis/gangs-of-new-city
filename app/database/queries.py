@@ -65,8 +65,6 @@ class Hero:
         return query
 
 
-
-
 class Referral:
     model = None
     skip_keys = ["id"]
@@ -78,3 +76,12 @@ class Referral:
     @classmethod
     async def get(cls, query):
         return {"id": 123123123}
+
+
+class Wallet:
+    model = None
+    skip_keys = ["id"]
+
+    @classmethod
+    async def get(cls, query):
+        return query
