@@ -16,7 +16,6 @@ USER_IS_NOT_BLOCKED = {
 }
 
 USER_KEY = 'user'
-STATUSES = [Code.USER_IS_BLOCKED, Code.EMERGENCY_STOP]
 
 
 @pytest.mark.unit
@@ -24,9 +23,9 @@ STATUSES = [Code.USER_IS_BLOCKED, Code.EMERGENCY_STOP]
 @pytest.mark.stations
 async def test__traveled_user_is_not_blocked(train):
     train.states[USER_KEY] = USER_IS_NOT_BLOCKED
-    await IsUserBlockedSt(train).traveled()
+    status = await IsUserBlockedSt(train).traveled()
 
-    assert train.status == Code.USER_IS_NOT_BLOCKED
+    assert status == Code.IS_OK
 
 
 @pytest.mark.unit
@@ -34,10 +33,9 @@ async def test__traveled_user_is_not_blocked(train):
 @pytest.mark.stations
 async def test__traveled_user_is_blocked(train):
     train.states[USER_KEY] = USER_IS_BLOCKED
-    await IsUserBlockedSt(train).traveled()
+    status = await IsUserBlockedSt(train).traveled()
 
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.skip("Требуется `views.answers`.")

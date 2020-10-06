@@ -14,27 +14,29 @@
 централизованного хранения информации о запросах
 и данных с которыми работает база данных.
 """
-
+from pprint import pformat
 from logging import getLogger
 
 import app.database as db
 from .statuses import Statuses as Code
+from app.views import answers as an
 
-logger = getLogger(__name__)
+
+logger = getLogger("stations")
 
 
 class BaseSt:
     def __init__(self, train):
         self.train = train
-        logger.debug(self.train)
+        train.progress = {
+            "name": self._station_name(),
+            "status": True
+        }
+        logger.info(pformat(self.train.payload))
+        #  pp(self.train.payload)
 
-    @property
-    def status(self):
-        return self.train.status
-
-    @status.setter
-    def status(self, status):
-        self.train.status = status
+    def _station_name(self):
+        return self.__class__.__name__
 
     @property
     def exception(self):
@@ -64,8 +66,7 @@ class BaseSt:
             result = await storage_query(
                 self.train.queries[query_name])
         except Exception as e:
-            self.exception = e
-            self.status = Code.DATABASE_ERROR
+            self.exception = {"args": e.args, "traceback": e.__traceback__}
             await self.add_exception_answer()
 
         return result
@@ -82,8 +83,7 @@ class StartRailwayDepotSt(BaseSt):
     В этот класс можно встроить старт метрики `timeit`.
     """
     async def traveled(self):
-        self.status = Code.IN_THE_WAY
-        return self.train
+        return Code.IS_OK
 
 
 class FinishRailwayDepotSt(BaseSt):
@@ -93,8 +93,7 @@ class FinishRailwayDepotSt(BaseSt):
     В этот класс можно встроить финиш метрики `timeit`.
     """
     async def traveled(self):
-        self.status = Code.FINISHED
-        return self.train
+        return Code.IS_OK
 
 
 class GetUserSt(BaseSt):
@@ -122,12 +121,10 @@ class GetUserSt(BaseSt):
             self.storage_query(), self.query_data())
         self.train.states["user"] = user
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.GET_USER
-        return self.train
+        return Code.IS_OK
 
 
 class IsNewUserSt(BaseSt):
@@ -142,18 +139,15 @@ class IsNewUserSt(BaseSt):
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
-        self.train.status = Code.USER_IS_NOT_NEW
         self.answers = "нашли пользователя"  # todo: данные из модуля `views`
 
     async def traveled(self):
         user = self.train.states['user']
         if user:  # Пользователь существует
             await self.add_out_answer()
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.USER_IS_NEW
-        return self.train
+        return Code.IS_OK
 
 
 class UserCreateSt(BaseSt):
@@ -169,8 +163,11 @@ class UserCreateSt(BaseSt):
     """
     async def add_out_answer(self):
         # todo: данные из модуля `views`
-        self.status = Code.USER_CREATE
-        self.train.answers = 'создали пользователя'
+        state = {
+            "chat_id": self.train.data["id"],
+            "language": self.train.data["language"]
+        }
+        self.train.answers = await an.NewUser(state).get()
 
     def query_data(self):
         query_name = "create_user"
@@ -191,12 +188,11 @@ class UserCreateSt(BaseSt):
             self.storage_query(), self.query_data())
         self.train.states["user"] = user
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
         await self.add_out_answer()
-        return self.train
+        return Code.IS_OK
 
 
 class DoesUserHaveReferralIdSt(BaseSt):
@@ -213,11 +209,9 @@ class DoesUserHaveReferralIdSt(BaseSt):
     async def traveled(self):
         referral_id = self.train.data["referral_id"]
         if not referral_id:
-            self.status = Code.USER_DOSE_NOT_HAVE_REFERRAL_ID
-            self.status = Code.EMERGENCY_STOP
-            return self.train
-        self.status = Code.USER_HAS_REFERRAL_ID
-        return self.train
+            return Code.EMERGENCY_STOP
+
+        return Code.IS_OK
 
 
 class GetInviterSt(BaseSt):
@@ -246,12 +240,10 @@ class GetInviterSt(BaseSt):
             self.storage_query(), self.query_data())
         self.train.states["inviter"] = inviter
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.GET_INVITER
-        return self.train
+        return Code.IS_OK
 
 
 class IsThereInviterSt(BaseSt):
@@ -266,12 +258,9 @@ class IsThereInviterSt(BaseSt):
     async def traveled(self):
         inviter = self.train.states["inviter"]
         if not inviter:
-            self.status = Code.INVITER_IS_NOT_THERE
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.INVITER_IS_THERE
-        return self.train
+        return Code.IS_OK
 
 
 class UserIsInviterSt(BaseSt):
@@ -290,12 +279,9 @@ class UserIsInviterSt(BaseSt):
         user = self.train.states['user']
         inviter = self.train.states['inviter']
         if user["id"] == inviter["id"]:
-            self.status = Code.USER_IS_INVITER
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.USER_IS_NOT_INVITER
-        return self.train
+        return Code.IS_OK
 
 
 class AddReferralDataSt(BaseSt):
@@ -309,7 +295,6 @@ class AddReferralDataSt(BaseSt):
     Добавленные данные: ['answers']['answer']
     """
     async def add_out_answers(self):
-        self.status = Code.ADD_REFERRAL_DATA
         self.train.answers = "сообщаем что дан боннус"
 
     def query_data(self):
@@ -329,12 +314,11 @@ class AddReferralDataSt(BaseSt):
             self.storage_query(), self.query_data()
         )
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
         await self.add_out_answers()
-        return self.train
+        return Code.IS_OK
 
 
 class IsThereUserSt(BaseSt):
@@ -349,18 +333,15 @@ class IsThereUserSt(BaseSt):
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
-        self.train.status = Code.USER_IS_NOT_THERE
         self.answers = "не нашли пользователя"
 
     async def traveled(self):
         user = self.train.states['user']
         if not user:  # Пользователь не существует
             await self.add_out_answer()
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.USER_IS_THERE
-        return self.train
+        return Code.IS_OK
 
 
 class IsUserBlockedSt(BaseSt):
@@ -377,13 +358,10 @@ class IsUserBlockedSt(BaseSt):
     async def traveled(self):
         user = self.train.states["user"]
         if user and user["is_blocked"]:
-            self.status = Code.USER_IS_BLOCKED
-            self.status = Code.EMERGENCY_STOP
             await self.add_out_answer()
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.USER_IS_NOT_BLOCKED
-        return self.train
+        return Code.IS_OK
 
 
 class GetHeroSt(BaseSt):
@@ -411,12 +389,10 @@ class GetHeroSt(BaseSt):
         )
         self.train.states["hero"] = hero
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.GET_HERO
-        return self.train
+        return Code.IS_OK
 
 
 class IsNewHeroSt(BaseSt):
@@ -435,12 +411,9 @@ class IsNewHeroSt(BaseSt):
         hero = self.train.states['hero']
         if hero:
             await self.add_out_answers()
-            self.status = Code.HERO_IS_NOT_NEW
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.HERO_IS_NEW
-        return self.train
+        return Code.IS_OK
 
 
 class IsNewHeroUniqueSt(BaseSt):
@@ -476,18 +449,14 @@ class IsNewHeroUniqueSt(BaseSt):
         )
         self.train.states["is_hero"] = is_hero
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
         if is_hero:
-            self.status = Code.NEW_HERO_IS_NOT_UNIQUE
-            self.status = Code.EMERGENCY_STOP
             await self.add_out_answers()
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.NEW_HERO_IS_UNIQUE
-        return self.train
+        return Code.IS_OK
 
 
 class NewHeroCreateSt(BaseSt):
@@ -523,13 +492,11 @@ class NewHeroCreateSt(BaseSt):
         )
         self.train.states['new_hero'] = new_hero
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
         await self.add_out_answers()
-        self.status = Code.NEW_HERO_CREATE
-        return self.train
+        return Code.IS_OK
 
 
 class GetWalletSt(BaseSt):
@@ -557,11 +524,10 @@ class GetWalletSt(BaseSt):
         )
         self.train.states["wallet"] = wallet
 
-        if self.status is Code.DATABASE_ERROR:
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+        if self.exception:
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.GET_WALLET
+        return Code.IS_OK
 
 
 class IsThereWalletSt(BaseSt):
@@ -580,12 +546,9 @@ class IsThereWalletSt(BaseSt):
         wallet = self.train.states["wallet"]
         if not wallet:
             await self.add_out_answers()
-            self.status = Code.WALLET_IS_NOT_THERE
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.WALLET_IS_THERE
-        return self.train
+        return Code.IS_OK
 
 
 class ViewWalletSt(BaseSt):
@@ -602,8 +565,7 @@ class ViewWalletSt(BaseSt):
 
     async def traveled(self):
         await self.add_out_answers()
-        self.status = Code.VIEW_WALLET
-        return self.train
+        return Code.IS_OK
 
 
 class IsThereHeroSt(BaseSt):
@@ -622,12 +584,9 @@ class IsThereHeroSt(BaseSt):
         hero = self.train.states["hero"]
         if not hero:
             await self.add_out_answers()
-            self.status = Code.HERO_IS_NOT_THERE
-            self.status = Code.EMERGENCY_STOP
-            return self.train
+            return Code.EMERGENCY_STOP
 
-        self.status = Code.HERO_IS_THERE
-        return self.train
+        return Code.IS_OK
 
 
 class ViewHeroSt(BaseSt):
@@ -644,5 +603,4 @@ class ViewHeroSt(BaseSt):
 
     async def traveled(self):
         await self.add_out_answers()
-        self.status = Code.VIEW_HERO
-        return self.train
+        return Code.IS_OK

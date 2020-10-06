@@ -18,9 +18,9 @@ KEY_REFERRAL_ID = "referral_id"
 async def test__traveled(train, monkeypatch):
     monkeypatch.setattr(GetInviterSt, "execution", fake_execution)
     train.data[KEY_REFERRAL_ID] = REFERRAL_ID
-    await GetInviterSt(train).traveled()
+    status = await GetInviterSt(train).traveled()
 
-    assert train.status == Code.GET_INVITER
+    assert status == Code.IS_OK
     assert isinstance(train.states['inviter'], dict)
 
 
@@ -29,9 +29,9 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(GetInviterSt, "execution", fake_execution_with_error)
-    await GetInviterSt(train).traveled()
+    status = await GetInviterSt(train).traveled()
 
-    assert train.status == Code.EMERGENCY_STOP
+    assert status == Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

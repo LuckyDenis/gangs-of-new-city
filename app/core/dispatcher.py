@@ -10,6 +10,7 @@ from app.core import stations as st
 from app.core.statuses import Statuses as Code
 from app.core.train import Train
 
+
 logger = getLogger(__name__)
 
 
@@ -17,6 +18,13 @@ class BaseItinerary:
     def __init__(self, data):
         self.train = Train(data)
         self.data_has_required_keys()
+
+    def add_checkpoint(self):
+        for station in self.stations():
+            self.train.progress = {
+                "name": station.__name__,
+                "status": False
+            }
 
     async def move(self):
         """
@@ -27,9 +35,10 @@ class BaseItinerary:
         пользователю.
         :return: None
         """
+        self.add_checkpoint()
         for station in self.stations():
-            await station(self.train).traveled()
-            if self.train.status == Code.EMERGENCY_STOP:
+            status = await station(self.train).traveled()
+            if status == Code.EMERGENCY_STOP:
                 break
 
     def data_has_required_keys(self):
@@ -47,6 +56,8 @@ class BaseItinerary:
         `core.stations.BaseSt`. Используется для сбора и
         обработки информации сообщения пользователя.
         Подробней о мотивации в модуле `core.stations`.
+
+        Паттерн: Цепочка обязанностей.
         :return: [BaseSt]
         """
         raise NotImplementedError
@@ -145,7 +156,7 @@ class GetWalletItinerary(BaseItinerary):
             st.IsUserBlockedSt,
             st.GetWalletSt,
             st.IsThereWalletSt,
-            st.ViewsWalletSt,
+            st.ViewWalletSt,
             st.FinishRailwayDepotSt
         ]
 
@@ -165,7 +176,7 @@ class GetHeroItinerary(BaseItinerary):
             st.IsUserBlockedSt,
             st.GetHeroSt,
             st.IsThereHeroSt,
-            st.ViewsHeroSt,
+            st.ViewHeroSt,
             st.FinishRailwayDepotSt
         ]
 

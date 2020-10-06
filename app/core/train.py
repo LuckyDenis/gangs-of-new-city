@@ -26,8 +26,8 @@ class Train:
             "data": data,
             "answers": list(),
             "__state__": {
-                "exception": None,
-                "statuses": []
+                "exception": dict(),
+                "progress": dict(),
             }
         }
 
@@ -38,12 +38,14 @@ class Train:
         self.payload[key] = value
 
     @property
-    def status(self):
-        return self.payload["__state__"]["statuses"][-1]
+    def progress(self):
+        return self.payload["__state__"]["progress"]
 
-    @status.setter
-    def status(self, status):
-        self.payload["__state__"]["statuses"].append(status)
+    @progress.setter
+    def progress(self, station):
+        station_name = station["name"]
+        status = station["status"]
+        self.payload["__state__"]["progress"][station_name] = status
 
     @property
     def exception(self):

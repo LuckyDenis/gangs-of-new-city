@@ -13,9 +13,9 @@ from app.database.queries import User
 @pytest.mark.stations
 async def test__traveled(data, train, monkeypatch):
     monkeypatch.setattr(UserCreateSt, "execution", fake_execution)
-    await UserCreateSt(train).traveled()
+    status = await UserCreateSt(train).traveled()
 
-    assert train.status == Code.USER_CREATE
+    assert status is Code.IS_OK
     assert train.states["user"]["id"] == data["id"]
 
 
@@ -24,9 +24,9 @@ async def test__traveled(data, train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(UserCreateSt, "execution", fake_execution_with_error)
-    await UserCreateSt(train).traveled()
+    status = await UserCreateSt(train).traveled()
 
-    assert train.status == Code.EMERGENCY_STOP
+    assert status == Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

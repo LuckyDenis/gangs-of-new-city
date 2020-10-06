@@ -10,23 +10,21 @@ ANSWER = "answer test"
 
 class ASt(BaseSt):
     async def traveled(self):
-        self.status = Code.IN_THE_WAY
         self.train.states["A"] = True
-        return self.train
+        return Code.IS_OK
 
 
 class BSt(BaseSt):
     async def traveled(self):
         self.train.states["B"] = True
-        self.status = Code.EMERGENCY_STOP
-        return self.train
+        return Code.EMERGENCY_STOP
 
 
 class CSt(BaseSt):
     async def traveled(self):
         self.train.states["C"] = True
         self.train.answers = ANSWER
-        return self.train
+        return Code.IS_OK
 
 
 def fake_required_keys(*_):
@@ -96,7 +94,6 @@ async def test__move_with_emergency_stop(data, monkeypatch):
     base_itinerary = BaseItinerary(data)
     await base_itinerary.move()
     assert base_itinerary.get_answers() == []
-    assert base_itinerary.train.status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

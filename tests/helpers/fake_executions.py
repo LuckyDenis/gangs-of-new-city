@@ -7,7 +7,9 @@ async def fake_execution(self, storage_query, query_name):
 
 
 async def fake_execution_with_error(self, storage_query, query_name):
-    self.train.status = Code.DATABASE_ERROR
+    self.train.exception = {
+        "args": [], "__traceback__": ""
+    }
     return self.train.queries[query_name]
 
 

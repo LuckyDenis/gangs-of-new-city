@@ -13,8 +13,8 @@ from tests.helpers.fake_executions import fake_execution_with_error
 @pytest.mark.stations
 async def test__traveled(train, monkeypatch):
     monkeypatch.setattr(GetUserSt, "execution", fake_execution)
-    await GetUserSt(train).traveled()
-    assert train.status == Code.GET_USER
+    status = await GetUserSt(train).traveled()
+    assert status == Code.IS_OK
     assert isinstance(train.states['user'], dict)
 
 
@@ -23,8 +23,8 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(GetUserSt, "execution", fake_execution_with_error)
-    await GetUserSt(train).traveled()
-    assert train.status == Code.EMERGENCY_STOP
+    status = await GetUserSt(train).traveled()
+    assert status == Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

@@ -13,7 +13,6 @@ WALLET = {
 EMPTY_WALLET = {}
 
 WALLET_KEY = 'wallet'
-STATUSES = [Code.WALLET_IS_NOT_THERE, Code.EMERGENCY_STOP]
 
 
 @pytest.mark.unit
@@ -21,9 +20,9 @@ STATUSES = [Code.WALLET_IS_NOT_THERE, Code.EMERGENCY_STOP]
 @pytest.mark.stations
 async def test__traveled_wallet_is_there(train):
     train.states[WALLET_KEY] = WALLET
-    await IsThereWalletSt(train).traveled()
+    status = await IsThereWalletSt(train).traveled()
 
-    assert train.status == Code.WALLET_IS_THERE
+    assert status is Code.IS_OK
 
 
 @pytest.mark.unit
@@ -31,10 +30,9 @@ async def test__traveled_wallet_is_there(train):
 @pytest.mark.stations
 async def test__traveled_wallet_is_not_there(train):
     train.states[WALLET_KEY] = EMPTY_WALLET
-    await IsThereWalletSt(train).traveled()
+    status = await IsThereWalletSt(train).traveled()
 
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.skip("Требуется `views.answers`.")

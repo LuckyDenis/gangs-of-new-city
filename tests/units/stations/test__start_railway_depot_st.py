@@ -9,5 +9,5 @@ from app.core.train import Train
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled():
-    train = await StartRailwayDepotSt(Train({})).traveled()
-    assert train.status == Code.IN_THE_WAY
+    status = await StartRailwayDepotSt(Train({})).traveled()
+    assert status is Code.IS_OK
