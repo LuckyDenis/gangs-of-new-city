@@ -3,8 +3,22 @@
 import errno
 import json
 import sys
+import functools
 
 from python_json_config import ConfigBuilder
+
+
+def singleton(cls):
+    instance = None
+
+    @functools.wraps(cls)
+    def inner(*args, **kwargs):
+        nonlocal instance
+        if instance is None:
+            instance = cls(*args, **kwargs)
+        return instance
+    return inner
+
 
 builder = ConfigBuilder()
 
@@ -35,6 +49,7 @@ builder.validate_field_type("bot.webhook.path", str)
 
 
 # ----- Конфиг ----- #
+@singleton
 class Setup:
     def __init__(self, path):
         self._data = None
@@ -44,7 +59,7 @@ class Setup:
     def _read(self):
         try:
             self._data = builder.parse_config(self._path)
-        except (OSError, json.decoder.JSONDecodeError, TypeError) as err:
+        except (OSError, TypeError) as err:
             print(err)
             sys.exit(errno.EPERM)
 
@@ -58,4 +73,4 @@ class Setup:
 
     @property
     def bot(self):
-        return self._data.database.to_dict()
+        return self._data.bot.to_dict()

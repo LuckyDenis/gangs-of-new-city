@@ -33,9 +33,9 @@ def up_train(train):
 async def test__traveled(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(AddReferralDataSt, "execution", fake_execution)
-    await AddReferralDataSt(train).traveled()
+    status = await AddReferralDataSt(train).traveled()
 
-    assert train.status == Code.ADD_REFERRAL_DATA
+    assert status == Code.IS_OK
     assert isinstance(train.states['inviter'], dict)
 
 
@@ -46,9 +46,9 @@ async def test__traveled_with_error(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(
         AddReferralDataSt, "execution", fake_execution_with_error)
-    await AddReferralDataSt(train).traveled()
+    status = await AddReferralDataSt(train).traveled()
 
-    assert train.status == Code.EMERGENCY_STOP
+    assert status == Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

@@ -24,8 +24,8 @@ def up_train(train):
 async def test__traveled(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(IsNewHeroUniqueSt, "execution", fake_execution_empty)
-    await IsNewHeroUniqueSt(train).traveled()
-    assert train.status == Code.NEW_HERO_IS_UNIQUE
+    status = await IsNewHeroUniqueSt(train).traveled()
+    assert status is Code.IS_OK
 
 
 @pytest.mark.unit
@@ -35,13 +35,10 @@ async def test__traveled_with_error(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(
         IsNewHeroUniqueSt, "execution", fake_execution_with_error)
-    await IsNewHeroUniqueSt(train).traveled()
+    status = await IsNewHeroUniqueSt(train).traveled()
 
     assert isinstance(train.states['is_hero'], dict)
-
-    STATUSES = [Code.DATABASE_ERROR, Code.EMERGENCY_STOP]
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit
@@ -50,11 +47,9 @@ async def test__traveled_with_error(up_train, monkeypatch):
 async def test__traveled_hero_is_not_unique(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(IsNewHeroUniqueSt, "execution", fake_execution)
-    await IsNewHeroUniqueSt(train).traveled()
+    status = await IsNewHeroUniqueSt(train).traveled()
 
-    STATUSES = [Code.NEW_HERO_IS_NOT_UNIQUE, Code.EMERGENCY_STOP]
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

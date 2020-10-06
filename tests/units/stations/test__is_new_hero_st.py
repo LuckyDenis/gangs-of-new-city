@@ -14,7 +14,6 @@ NOT_NEW_HERO = {
 }
 
 HERO_KEY = 'hero'
-STATUSES = [Code.HERO_IS_NOT_NEW, Code.EMERGENCY_STOP]
 
 
 @pytest.mark.unit
@@ -22,9 +21,9 @@ STATUSES = [Code.HERO_IS_NOT_NEW, Code.EMERGENCY_STOP]
 @pytest.mark.stations
 async def test__traveled_hero_is_new(train):
     train.states[HERO_KEY] = NEW_HERO
-    await IsNewHeroSt(train).traveled()
+    status = await IsNewHeroSt(train).traveled()
 
-    assert train.status == Code.HERO_IS_NEW
+    assert status == Code.IS_OK
 
 
 @pytest.mark.unit
@@ -32,10 +31,9 @@ async def test__traveled_hero_is_new(train):
 @pytest.mark.stations
 async def test__traveled_hero_is_not_new(train):
     train.states[HERO_KEY] = NOT_NEW_HERO
-    await IsNewHeroSt(train).traveled()
+    status = await IsNewHeroSt(train).traveled()
 
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.skip("Требуется `views.answers`.")

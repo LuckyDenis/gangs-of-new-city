@@ -29,6 +29,21 @@
         "handlers": ["default"],
         "level": "DEBUG",
         "propagate": true
+      },
+      "gino": {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": false
+      },
+      "aiogram": {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": false
+      },
+      "stations": {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": false
       }
     }
   },

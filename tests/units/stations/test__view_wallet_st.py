@@ -9,9 +9,9 @@ from app.core.statuses import Statuses as Code
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(train):
-    await ViewWalletSt(train).traveled()
+    status = await ViewWalletSt(train).traveled()
 
-    assert train.status == Code.VIEW_WALLET
+    assert status is Code.IS_OK
 
 
 @pytest.mark.skip("Требуется `views.answers`.")

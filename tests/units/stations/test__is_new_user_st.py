@@ -21,11 +21,8 @@ USER_KEY = 'user'
 @pytest.mark.stations
 async def test__traveled_user_is_there(train):
     train.states[USER_KEY] = USER_IS_NO_NEW
-    train = await IsNewUserSt(train).traveled()
-
-    STATUSES = [Code.USER_IS_NOT_NEW, Code.EMERGENCY_STOP]
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    status = await IsNewUserSt(train).traveled()
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit
@@ -33,11 +30,9 @@ async def test__traveled_user_is_there(train):
 @pytest.mark.stations
 async def test__traveled_user_not_is_there(train):
     train.states[USER_KEY] = USER_IS_NEW
-    train = await IsNewUserSt(train).traveled()
+    status = await IsNewUserSt(train).traveled()
 
-    STATUSES = Code.USER_IS_NEW
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-1] == STATUSES
+    assert status is Code.IS_OK
 
 
 @pytest.mark.skip("Требуется `views.answers`.")

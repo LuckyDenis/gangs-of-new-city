@@ -16,8 +16,8 @@ WALLET_KEY = "wallet"
 @pytest.mark.stations
 async def test__traveled(train, monkeypatch):
     monkeypatch.setattr(GetWalletSt, "execution", fake_execution)
-    await GetWalletSt(train).traveled()
-    assert train.status == Code.GET_WALLET
+    status = await GetWalletSt(train).traveled()
+    assert status == Code.IS_OK
     assert isinstance(train.states[WALLET_KEY], dict)
 
 
@@ -26,8 +26,8 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(GetWalletSt, "execution", fake_execution_with_error)
-    await GetWalletSt(train).traveled()
-    assert train.status == Code.EMERGENCY_STOP
+    status = await GetWalletSt(train).traveled()
+    assert status == Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

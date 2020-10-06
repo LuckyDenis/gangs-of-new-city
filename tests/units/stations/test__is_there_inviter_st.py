@@ -19,9 +19,9 @@ INVITER_KEY = 'inviter'
 @pytest.mark.stations
 async def test__traveled_inviter_is_there(train):
     train.states[INVITER_KEY] = INVITER
-    await IsThereInviterSt(train).traveled()
+    status = await IsThereInviterSt(train).traveled()
 
-    assert train.status == Code.INVITER_IS_THERE
+    assert status is Code.IS_OK
 
 
 @pytest.mark.unit
@@ -29,8 +29,6 @@ async def test__traveled_inviter_is_there(train):
 @pytest.mark.stations
 async def test__traveled_inviter_not_is_there(train):
     train.states[INVITER_KEY] = VOID_INVITER
-    await IsThereInviterSt(train).traveled()
+    status = await IsThereInviterSt(train).traveled()
 
-    STATUSES = [Code.INVITER_IS_NOT_THERE, Code.EMERGENCY_STOP]
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP

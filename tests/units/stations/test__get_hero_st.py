@@ -16,8 +16,8 @@ HERO_KEY = "hero"
 @pytest.mark.stations
 async def test__traveled(train, monkeypatch):
     monkeypatch.setattr(GetHeroSt, "execution", fake_execution)
-    await GetHeroSt(train).traveled()
-    assert train.status == Code.GET_HERO
+    status = await GetHeroSt(train).traveled()
+    assert status == Code.IS_OK
     assert isinstance(train.states[HERO_KEY], dict)
 
 
@@ -26,8 +26,8 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(GetHeroSt, "execution", fake_execution_with_error)
-    await GetHeroSt(train).traveled()
-    assert train.status == Code.EMERGENCY_STOP
+    status = await GetHeroSt(train).traveled()
+    assert status == Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

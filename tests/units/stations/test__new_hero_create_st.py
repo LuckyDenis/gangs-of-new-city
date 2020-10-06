@@ -4,7 +4,6 @@ import pytest
 from app.core.stations import NewHeroCreateSt
 from app.core.statuses import Statuses as Code
 from app.database.queries import Hero
-from tests.helpers.fake_executions import fake_execution
 from tests.helpers.fake_executions import fake_execution_with_error
 from tests.helpers.fake_executions import fake_execution_empty
 
@@ -21,8 +20,8 @@ def up_train(train):
 async def test__traveled(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(NewHeroCreateSt, "execution", fake_execution_empty)
-    await NewHeroCreateSt(train).traveled()
-    assert train.status == Code.NEW_HERO_CREATE
+    status = await NewHeroCreateSt(train).traveled()
+    assert status is Code.IS_OK
 
 
 @pytest.mark.unit
@@ -32,11 +31,9 @@ async def test__traveled_with_error(up_train, monkeypatch):
     train = up_train
     monkeypatch.setattr(
         NewHeroCreateSt, "execution", fake_execution_with_error)
-    await NewHeroCreateSt(train).traveled()
+    status = await NewHeroCreateSt(train).traveled()
 
-    STATUSES = [Code.DATABASE_ERROR, Code.EMERGENCY_STOP]
-    statuses = train["__state__"]["statuses"]
-    assert statuses[-2:] == STATUSES
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.unit

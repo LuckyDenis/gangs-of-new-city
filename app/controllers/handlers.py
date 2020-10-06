@@ -1,40 +1,67 @@
 # coding: utf8
 from logging import getLogger
 
-from aiogram import Dispatcher
-from aiogram import Bot
+
 from aiogram import types as t
 from app.helpers import Cmds
 from app import core
+from app.views import Types
+
+from app.configuration.settings import Setup
+from aiogram import Dispatcher
+from aiogram import Bot
+from aiogram.types import ParseMode
+
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--cfg")
+args = parser.parse_args()
+
+setup = Setup(args.cfg)
 
 
 bot = Bot(
-    token="",
-    proxy="",
-    parse_mode=t.ParseMode.HTML
+    token=setup.bot["token"],
+    parse_mode=ParseMode.HTML
 )
+dp = Dispatcher(bot)
 
 logger = getLogger(__name__)
-dp = Dispatcher(bot)
 
 
 # ----- cmd: start ----- #
-@dp.message_handler(commands=[Cmds.START])
+@dp.message_handler(commands=[str(Cmds.START)])
 async def cmd_start(message: t.Message):
     data = {
-        "id": message.chat.id
+        "id": message.chat.id,
+        "language": "en",
+        "datetime": message.date.date(),
+        "referral_id": message.get_args() or False
     }
-    train = core.NewUserTrain(data)
+    train = core.NewUserItinerary(data)
     await train.move()
-    result = train.get_result()
-    await publish_answers(message, result)
+    answers = train.get_answers()
+    await done(answers)
 
 
-# ----- publish answer ----- #
-async def publish_answers(message, result):
-    answers = result["answers"]
+async def done(answers):
     for answer in answers:
-        await bot.send_message(
-            message.chat.id,
-            answer
+        send_handler = send_handlers(
+            answer["message_type"]
         )
+        await send_handler(answer)
+
+
+def send_handlers(message_type):
+    functions = {
+        Types.TEXT_MESSAGE: send_text_message
+    }
+    return functions[message_type]
+
+
+async def send_text_message(answer):
+    await bot.send_message(
+        answer["chat_id"],
+        answer["text"]
+    )
