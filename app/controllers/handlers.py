@@ -11,6 +11,8 @@ from app.configuration.settings import Setup
 from aiogram import Dispatcher
 from aiogram import Bot
 from aiogram.types import ParseMode
+from app.middlewares.storage import GinoMiddleware
+from app.middlewares.unique_id import UniqueIdMiddleware
 
 import argparse
 
@@ -26,14 +28,19 @@ bot = Bot(
     parse_mode=ParseMode.HTML
 )
 dp = Dispatcher(bot)
+dp.middleware.setup(GinoMiddleware(setup.database))
+dp.middleware.setup(UniqueIdMiddleware())
+
 
 logger = getLogger(__name__)
 
 
 # ----- cmd: start ----- #
 @dp.message_handler(commands=[str(Cmds.START)])
-async def cmd_start(message: t.Message):
+async def cmd_start(message: t.Message, unique_id):
     data = {
+        "is_bot": message.from_user.is_bot,
+        "unique_id": unique_id,
         "id": message.chat.id,
         "language": "en",
         "datetime": message.date.date(),

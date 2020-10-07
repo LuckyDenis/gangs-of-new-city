@@ -25,7 +25,8 @@ class User:
             "is_blocked": bool
         } or {}
         """
-        return {}  # {'id': query['id']}
+        result = await cls.model.get(query)
+        return {**result} if result else {}
 
     @classmethod
     async def create(cls, query):
@@ -34,14 +35,16 @@ class User:
             "id": user id,
             "language": database.fixture.Language
             "visited": datetime.datetime
-            "registered": datetime.datetime
+            "registered": datetime.datetime,
+            "is_bot": bool
         }
         :return: {
             "id": user id,
             "language" database.fixture.Language
         }
         """
-        return query
+        await cls.model.create(query)
+        return {"id": query["id"], "language": query["language"]}
 
     @classmethod
     async def change(cls, query):

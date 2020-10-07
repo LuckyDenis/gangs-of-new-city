@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from logging import getLogger
-from pprint import pp
+from pprint import pformat
 
 import uvloop
 
@@ -11,7 +11,7 @@ from app.core.statuses import Statuses as Code
 from app.core.train import Train
 
 
-logger = getLogger(__name__)
+logger = getLogger("dispatcher")
 
 
 class BaseItinerary:
@@ -40,6 +40,7 @@ class BaseItinerary:
             status = await station(self.train).traveled()
             if status == Code.EMERGENCY_STOP:
                 break
+        logger.info(pformat(self.train.payload))
 
     def data_has_required_keys(self):
         for key in self.required_keys():

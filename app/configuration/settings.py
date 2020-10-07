@@ -1,7 +1,6 @@
 # coding: utf8
 
 import errno
-import json
 import sys
 import functools
 

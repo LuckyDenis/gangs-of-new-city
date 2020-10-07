@@ -39,6 +39,7 @@ async def test__query_data(train):
     assert query_data.get("language")
     assert query_data.get("visited")
     assert query_data.get("registered")
+    assert query_data.get("is_bot") is False
 
 
 @pytest.mark.unit

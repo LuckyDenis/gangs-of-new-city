@@ -10,6 +10,3 @@ class Gangs:
     RED = "red"
     YELLOW = "yellow"
     ORANGE = "orange"
-    GREEN = "green"
-    BLUE = "blue"
-    PURPLE = "purple"
