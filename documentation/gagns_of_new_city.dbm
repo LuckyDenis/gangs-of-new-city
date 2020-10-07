@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.2" last-position="0,0" last-zoom="1" max-obj-count="6"
+	 default-schema="public" default-owner="postgres">
+<role name="denis"
+      superuser="true">
+</role>
+
+<database name="gangs_of_new_city" is-template="false" allow-conns="true">
+</database>
+
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<table name="user" layer="0" collapse-mode="2" max-obj-count="10">
+	<schema name="public"/>
+	<role name="denis"/>
+	<position x="180" y="120"/>
+	<column name="id" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="is_bot" not-null="true" default-value="false">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="is_permission" not-null="true" default-value="false">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="is_blocked" not-null="true" default-value="false">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="is_developer" not-null="true" default-value="false">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="is_tester" not-null="true" default-value="false">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="visited" not-null="true">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="registered" not-null="true">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="language" default-value="en">
+		<type name="varchar" length="2"/>
+	</column>
+	<constraint name="user_pk" type="pk-constr" table="public.&quot;user&quot;">
+		<columns names="id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="id_idx" table="public.&quot;user&quot;"
+	 concurrent="false" unique="true" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="id"/>
+		</idxelement>
+</index>
+
+<table name="language" layer="0" collapse-mode="2" max-obj-count="1">
+	<schema name="public"/>
+	<role name="denis"/>
+	<position x="480" y="20"/>
+	<column name="name" not-null="true">
+		<type name="varchar" length="2"/>
+	</column>
+	<constraint name="name_pk" type="pk-constr" table="public.language">
+		<columns names="name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="hero" layer="0" collapse-mode="2" max-obj-count="4">
+	<schema name="public"/>
+	<role name="denis"/>
+	<position x="540" y="320"/>
+	<column name="user" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="nick">
+		<type name="varchar" length="30"/>
+	</column>
+	<column name="level" not-null="true" default-value="1">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="gang">
+		<type name="varchar" length="10"/>
+	</column>
+	<constraint name="user_pk" type="pk-constr" table="public.hero">
+		<columns names="user" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="nick_uq" type="uq-constr" table="public.hero">
+		<columns names="nick" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="user_idx" table="public.hero"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="&quot;user&quot;"/>
+		</idxelement>
+</index>
+
+<index name="nick_idx" table="public.hero"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="nick"/>
+		</idxelement>
+</index>
+
+<index name="level_idx" table="public.hero"
+	 concurrent="false" unique="false" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="level"/>
+		</idxelement>
+</index>
+
+<table name="gang" layer="0" collapse-mode="2" max-obj-count="1">
+	<schema name="public"/>
+	<role name="denis"/>
+	<position x="740" y="20"/>
+	<column name="color" not-null="true">
+		<type name="varchar" length="10"/>
+	</column>
+	<constraint name="color_idx" type="pk-constr" table="public.gang">
+		<columns names="color" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="referral" layer="0" collapse-mode="2" max-obj-count="3">
+	<schema name="public"/>
+	<role name="denis"/>
+	<position x="160" y="520"/>
+	<column name="invited" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="inviter" not-null="true">
+		<type name="bigint" length="0"/>
+	</column>
+	<column name="is_pay" not-null="true" default-value="false">
+		<type name="bool" length="0"/>
+	</column>
+	<constraint name="referral_pk" type="pk-constr" table="public.referral">
+		<columns names="invited" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="language_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="CASCADE" del-action="SET DEFAULT" ref-table="public.language" table="public.&quot;user&quot;">
+	<columns names="language" ref-type="src-columns"/>
+	<columns names="name" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="user_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="CASCADE" del-action="CASCADE" ref-table="public.&quot;user&quot;" table="public.hero">
+	<columns names="user" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="gang_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="CASCADE" del-action="NO ACTION" ref-table="public.gang" table="public.hero">
+	<columns names="gang" ref-type="src-columns"/>
+	<columns names="color" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="invited_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.&quot;user&quot;" table="public.referral">
+	<columns names="invited" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="inviter_fk" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.&quot;user&quot;" table="public.referral">
+	<columns names="inviter" ref-type="src-columns"/>
+	<columns names="id" ref-type="dst-columns"/>
+</constraint>
+
+<relationship name="rel_user_language" type="relfk" layer="0"
+	 src-table="public.&quot;user&quot;"
+	 dst-table="public.language" reference-fk="language_fk"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="33.11" y="-28.1515"/>
+	</label>
+</relationship>
+
+<relationship name="rel_hero_user" type="relfk" layer="0"
+	 src-table="public.hero"
+	 dst-table="public.&quot;user&quot;" reference-fk="user_fk"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_hero_gang" type="relfk" layer="0"
+	 src-table="public.hero"
+	 dst-table="public.gang" reference-fk="gang_fk"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_referral_user" type="relfk" layer="0"
+	 src-table="public.referral"
+	 dst-table="public.&quot;user&quot;" reference-fk="invited_fk"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_referral_user1" type="relfk" layer="0"
+	 src-table="public.referral"
+	 dst-table="public.&quot;user&quot;" reference-fk="inviter_fk"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="55.1379" y="-11.6266"/>
+	</label>
+</relationship>
+
+</dbmodel>

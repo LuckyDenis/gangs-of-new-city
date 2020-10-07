@@ -21,7 +21,6 @@ import app.database as db
 from .statuses import Statuses as Code
 from app.views import answers as an
 
-
 logger = getLogger("stations")
 
 
@@ -32,8 +31,6 @@ class BaseSt:
             "name": self._station_name(),
             "status": True
         }
-        logger.info(pformat(self.train.payload))
-        #  pp(self.train.payload)
 
     def _station_name(self):
         return self.__class__.__name__
@@ -173,6 +170,7 @@ class UserCreateSt(BaseSt):
         query_name = "create_user"
         self.train.queries[query_name] = {
             "id": self.train.data["id"],
+            "is_bot": self.train.data["is_bot"],
             "language": self.train.data["language"],
             "visited": self.train.data["datetime"],
             "registered": self.train.data["datetime"],
