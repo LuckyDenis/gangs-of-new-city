@@ -43,12 +43,17 @@ class User:
             "language" database.fixture.Language
         }
         """
+        query["language"] = m.fixture.Languages.for_user(query["language"])
         await cls.model.create(query)
         return {"id": query["id"], "language": query["language"]}
 
     @classmethod
-    async def change(cls, query):
-        pass
+    async def is_agree_policy(cls, query):
+        await cls.model.is_agree_policy(query)
+
+    @classmethod
+    async def is_not_agree_policy(cls, query):
+        await cls.model.is_not_agree_policy(query)
 
 
 class Hero:

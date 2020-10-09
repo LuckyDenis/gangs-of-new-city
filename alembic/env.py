@@ -26,10 +26,12 @@ config = context.config
 fileConfig(config.config_file_name)
 
 target_metadata = db
-setup = Setup(environ.get("CONFIG"))
+config_path = environ.get("CONFIG")
+print(f"config path: {config_path}")
+setup = Setup(config_path)
 
 dt = setup.database["connect"]
-url = f'{dt["engine"]}://{dt["login"]}:{dt["password"]}@{dt["host"]}/{dt["name"]}'
+url = f'postgresql://{dt["login"]}:{dt["password"]}@{dt["host"]}/{dt["name"]}'
 
 
 def run_migrations_offline():

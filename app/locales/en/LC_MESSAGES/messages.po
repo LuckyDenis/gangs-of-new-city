@@ -1,0 +1,39 @@
+# English translations for PROJECT.
+# Copyright (C) 2020 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT 0.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2020-10-09 16:11+0300\n"
+"PO-Revision-Date: 2020-10-09 16:11+0300\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+
+#: views/keyboards.py:19
+msgid ":white_check_mark: To agree"
+msgstr ""
+
+#: views/keyboards.py:20
+msgid ":warning: Not to agree"
+msgstr ""
+
+#: views/templates.py:14
+msgid ""
+":guardsman: [ <b>Guardsman</b> ]\n"
+"To get to the city, you need to register.Read these documents first. This"
+" is a privacy policy and a license agreement. To continue, send a command"
+" indicating consent.\n"
+"\n"
+":white_check_mark: To agree: {cmd_agree}\n"
+":warning: Not to agree: {cmd_not_agree}"
+msgstr ""
+

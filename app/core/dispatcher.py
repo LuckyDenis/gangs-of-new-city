@@ -113,6 +113,51 @@ class NewUserItinerary(BaseItinerary):
         ]
 
 
+class UserIsNotAgreeItinerary(BaseItinerary):
+    """
+    cmd: /ano
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        """
+        Сначало проеверяем, имеет пользователь героя,
+        потом проверяем уникальность ника героя.
+        """
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.IsUserBlockedSt,
+            st.UserIsNotAgreeSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
+class UserIsAgreeItinerary(BaseItinerary):
+    """
+    cmd: /ayes
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        """
+        Сначало проеверяем, имеет пользователь героя,
+        потом проверяем уникальность ника героя.
+        """
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.IsUserBlockedSt,
+            st.UserIsAgreeHintSt,
+            st.UserIsAgreeSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
 class NewHeroItinerary(BaseItinerary):
     """
     cmd: /name "hero"
@@ -130,7 +175,6 @@ class NewHeroItinerary(BaseItinerary):
             st.GetUserSt,
             st.IsThereUserSt,
             st.IsUserBlockedSt,
-            st.GetHeroSt,
             st.IsNewHeroSt,
             st.IsNewHeroUniqueSt,
             st.NewHeroCreateSt,
@@ -180,23 +224,3 @@ class GetHeroItinerary(BaseItinerary):
             st.ViewHeroSt,
             st.FinishRailwayDepotSt
         ]
-
-
-async def main():
-    itinerary = NewUserItinerary({
-        "id": 123456789,
-        "language": "en",
-        "datetime": datetime.now(),
-        "referral_id": 123456789,
-    })
-    await itinerary.move()
-    train = itinerary.train
-    pp(train.payload)
-
-
-if __name__ == "__main__":
-    loop = uvloop.new_event_loop()
-    try:
-        loop.run_until_complete(main())
-    finally:
-        loop.close()

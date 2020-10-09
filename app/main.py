@@ -4,11 +4,13 @@ from aiogram import executor
 from app.controllers.handlers import setup
 from app.controllers.handlers import dp
 from app import journal
+from app import views
+
 from logging import getLogger
 
 
 journal.config.dictConfig(setup.logging)
-
+views.i18n.set_setup(setup.i18n)
 
 logger = getLogger("app")
 

@@ -13,6 +13,7 @@ from aiogram import Bot
 from aiogram.types import ParseMode
 from app.middlewares.storage import GinoMiddleware
 from app.middlewares.unique_id import UniqueIdMiddleware
+from app.views.emoji import emojize
 
 import argparse
 
@@ -20,7 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cfg")
 args = parser.parse_args()
 
-setup = Setup(args.cfg)
+setup = Setup(path=args.cfg)
 
 
 bot = Bot(
@@ -42,11 +43,41 @@ async def cmd_start(message: t.Message, unique_id):
         "is_bot": message.from_user.is_bot,
         "unique_id": unique_id,
         "id": message.chat.id,
-        "language": "en",
+        "language": message.from_user.language_code,
         "datetime": message.date.date(),
         "referral_id": message.get_args() or False
     }
     train = core.NewUserItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- cmd: ano ----- #
+@dp.message_handler(regexp=f"^{emojize(':warning:')}")
+@dp.message_handler(commands=[str(Cmds.ANO)])
+async def cmd_ano(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date.date(),
+    }
+    train = core.UserIsNotAgreeItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- cmd: ayes ----- #
+@dp.message_handler(regexp=f"^{emojize(':white_check_mark:')}")
+@dp.message_handler(commands=[str(Cmds.AYES)])
+async def cmd_ayes(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date.date(),
+    }
+    train = core.UserIsAgreeItinerary(data)
     await train.move()
     answers = train.get_answers()
     await done(answers)
@@ -70,5 +101,6 @@ def send_handlers(message_type):
 async def send_text_message(answer):
     await bot.send_message(
         answer["chat_id"],
-        answer["text"]
+        answer["text"],
+        reply_markup=answer["keyboard"]
     )
