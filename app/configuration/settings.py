@@ -2,21 +2,9 @@
 
 import errno
 import sys
-import functools
 
 from python_json_config import ConfigBuilder
-
-
-def singleton(cls):
-    instance = None
-
-    @functools.wraps(cls)
-    def inner(*args, **kwargs):
-        nonlocal instance
-        if instance is None:
-            instance = cls(*args, **kwargs)
-        return instance
-    return inner
+from app.helpers import singleton
 
 
 builder = ConfigBuilder()
@@ -47,10 +35,16 @@ builder.validate_field_type("bot.webhook.port", int)
 builder.validate_field_type("bot.webhook.path", str)
 
 
+# ----- i18n ----- #
+builder.validate_field_type("i18n.version", int)
+builder.validate_field_type("bot.path", str)
+builder.validate_field_type("bot.domain", str)
+
+
 # ----- Конфиг ----- #
 @singleton
 class Setup:
-    def __init__(self, path):
+    def __init__(self, path=None):
         self._data = None
         self._path = path
         self._read()
@@ -73,3 +67,7 @@ class Setup:
     @property
     def bot(self):
         return self._data.bot.to_dict()
+
+    @property
+    def i18n(self):
+        return self._data.i18n.to_dict()

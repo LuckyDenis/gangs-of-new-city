@@ -6,21 +6,23 @@ from app.core.statuses import Statuses as Code
 
 
 NEW_HERO = {
+    "id": 123456789,
+    "is_hero": None
 }
 
 NOT_NEW_HERO = {
     "id": 123456789,
-    "nick": "hero"
+    "is_hero": "hero"
 }
 
-HERO_KEY = 'hero'
+USER_KEY = 'user'
 
 
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_hero_is_new(train):
-    train.states[HERO_KEY] = NEW_HERO
+    train.states[USER_KEY] = NEW_HERO
     status = await IsNewHeroSt(train).traveled()
 
     assert status == Code.IS_OK
@@ -30,7 +32,7 @@ async def test__traveled_hero_is_new(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_hero_is_not_new(train):
-    train.states[HERO_KEY] = NOT_NEW_HERO
+    train.states[USER_KEY] = NOT_NEW_HERO
     status = await IsNewHeroSt(train).traveled()
 
     assert status is Code.EMERGENCY_STOP

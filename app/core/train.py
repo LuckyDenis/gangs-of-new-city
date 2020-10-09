@@ -29,7 +29,7 @@ class Train:
             "answers": list(),
             "__state__": {
                 "exception": dict(),
-                "progress": dict(),
+                "progress": OrderedDict(),
             }
         }
 

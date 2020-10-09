@@ -14,7 +14,7 @@
 централизованного хранения информации о запросах
 и данных с которыми работает база данных.
 """
-from pprint import pformat
+from pprint import pformat, pp
 from logging import getLogger
 
 import app.database as db
@@ -31,6 +31,7 @@ class BaseSt:
             "name": self._station_name(),
             "status": True
         }
+        logger.debug(self.train.payload)
 
     def _station_name(self):
         return self.__class__.__name__
@@ -136,7 +137,11 @@ class IsNewUserSt(BaseSt):
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
-        self.answers = "нашли пользователя"  # todo: данные из модуля `views`
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.data["language"]
+        }
+        self.answers = await an.UserIsNotNew(state).get()
 
     async def traveled(self):
         user = self.train.states['user']
@@ -159,9 +164,8 @@ class UserCreateSt(BaseSt):
     Добавленные данные: ['states']['user']
     """
     async def add_out_answer(self):
-        # todo: данные из модуля `views`
         state = {
-            "chat_id": self.train.data["id"],
+            "id": self.train.data["id"],
             "language": self.train.data["language"]
         }
         self.train.answers = await an.NewUser(state).get()
@@ -406,9 +410,22 @@ class IsNewHeroSt(BaseSt):
         self.train.answers = "у вас уже есть герой"
 
     async def traveled(self):
-        hero = self.train.states['hero']
+        hero = self.train.states["user"]['is_hero']
         if hero:
             await self.add_out_answers()
+            return Code.EMERGENCY_STOP
+
+        return Code.IS_OK
+
+
+class DoesUserHAveAgreeingSt(BaseSt):
+    async def add_out_answer(self):
+        self.train.answers = ""
+
+    async def traveled(self):
+        has_agreeing = self.train.states["user"]["has_agreeing"]
+        if not has_agreeing:
+            await self.add_out_answer()
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -600,5 +617,98 @@ class ViewHeroSt(BaseSt):
         self.train.answers = "Информация об герои игрока"
 
     async def traveled(self):
+        await self.add_out_answers()
+        return Code.IS_OK
+
+
+class UserIsNotAgreeSt(BaseSt):
+    async def add_out_answers(self):
+        pp(self.train.payload)
+        pp(self.train.data["id"])
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.states["user"]["language"]
+        }
+        self.train.answers = await an.UserIsNotAgree(state).get()
+
+    def query_data(self):
+        query_name = "is_not_agree"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.User.is_not_agree_policy
+
+    async def traveled(self):
+        await self.execution(
+            self.storage_query(), self.query_data()
+        )
+        if self.exception:
+            return Code.EMERGENCY_STOP
+        await self.add_out_answers()
+        return Code.IS_OK
+
+
+class UserIsAgreeHintSt(BaseSt):
+    async def add_out_answers(self):
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.states["user"]["language"]
+        }
+        self.train.answers = await an.UserIsAgreeHint(state).get()
+
+    def query_data(self):
+        query_name = "is_agree"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.User.is_agree_policy
+
+    async def traveled(self):
+        await self.execution(
+            self.storage_query(), self.query_data()
+        )
+
+        if self.exception:
+            return Code.EMERGENCY_STOP
+
+        await self.add_out_answers()
+        return Code.IS_OK
+
+
+class UserIsAgreeSt(BaseSt):
+    async def add_out_answers(self):
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.states["user"]["language"]
+        }
+        self.train.answers = await an.UserIsAgree(state).get()
+
+    def query_data(self):
+        query_name = "is_agree"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.User.is_agree_policy
+
+    async def traveled(self):
+        await self.execution(
+            self.storage_query(), self.query_data()
+        )
+
+        if self.exception:
+            return Code.EMERGENCY_STOP
+
         await self.add_out_answers()
         return Code.IS_OK

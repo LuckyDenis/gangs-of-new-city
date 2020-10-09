@@ -41,7 +41,7 @@ class User(db.Model):
     visited = sa.Column(sa.DateTime())
     registered = sa.Column(sa.DateTime())
     is_bot = sa.Column(sa.Boolean(), default=False)
-    is_permission = sa.Column(sa.Boolean(), default=False)
+    has_agreeing = sa.Column(sa.Boolean(), default=False)
     is_developer = sa.Column(sa.Boolean(), default=False)
     is_tester = sa.Column(sa.Boolean(), default=False)
     is_blocked = sa.Column(sa.Boolean(), default=False)
@@ -54,7 +54,7 @@ class User(db.Model):
              cls.is_bot,
              cls.is_blocked,
              cls.is_developer,
-             cls.is_permission,
+             cls.has_agreeing,
              cls.is_tester,
              Hero.nick.label("is_hero")]
         ).select_from(
@@ -74,6 +74,20 @@ class User(db.Model):
             registered=states["registered"],
             language=states["language"]
         ).gino.status()
+
+    @classmethod
+    async def is_agree_policy(cls, states):
+        async with db.transaction():
+            cls.update.values(
+                has_agreeing=True
+            ).where(cls.id == states["id"])
+
+    @classmethod
+    async def is_not_agree_policy(cls, states):
+        async with db.transaction():
+            cls.update.values(
+                has_agreeing=False
+            ).where(cls.id == states["id"])
 
 
 class Referral(db.Model):

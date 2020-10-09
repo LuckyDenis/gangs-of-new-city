@@ -72,5 +72,10 @@
       "port": -1,
       "path": "/webhook/"
     }
+  },
+  "i18n": {
+    "version": 1,
+    "path": "./locales",
+    "domain": "messages"
   }
 }
