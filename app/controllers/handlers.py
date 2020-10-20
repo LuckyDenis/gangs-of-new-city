@@ -102,5 +102,5 @@ async def send_text_message(answer):
     await bot.send_message(
         answer["chat_id"],
         answer["text"],
-        reply_markup=answer["keyboard"]
+        reply_markup=answer.get("keyboard")
     )

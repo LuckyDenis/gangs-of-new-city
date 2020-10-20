@@ -8,9 +8,15 @@ i18n = I18N()
 _ = i18n.gettext_lazy
 
 
-class StartMessage:
+class BaseMessage:
     @staticmethod
-    def get_template(states):
+    def get_template(states=None):
+        raise NotImplementedError()
+
+
+class StartMessage(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
         template = _(":guardsman: [ <b>Guardsman</b> ]\n"
                      "To get to the city, you need to register."
                      "Read these documents first. This is a privacy "
@@ -26,9 +32,9 @@ class StartMessage:
         return emojize(template)
 
 
-class UserIsNotAgree:
+class UserIsNotAgree(BaseMessage):
     @staticmethod
-    def get_template(states):
+    def get_template(states=None):
         template = _(":guardsman: [ <b>Guardsman</b> ]\n"
                      "Unfortunately, I cannot allow you to enter "
                      "the city until you have read and accepted the "
@@ -43,9 +49,9 @@ class UserIsNotAgree:
         return emojize(template)
 
 
-class UserIsAgree:
+class UserIsAgree(BaseMessage):
     @staticmethod
-    def get_template(states):
+    def get_template(states=None):
         template = _(":guardsman: [ <b>Guardsman</b> ]\n"
                      "Great! Now tell me your name. "
                      "To do this, send {cmd_name} NickName.\n\n"
@@ -57,9 +63,9 @@ class UserIsAgree:
         return emojize(template)
 
 
-class UserIsAgreeHint:
+class UserIsAgreeHint(BaseMessage):
     @staticmethod
-    def get_template(states):
+    def get_template(states=None):
         template = _(":interrobang: [ <b> Hint </b>]\n"
                      "Choose your name carefully. "
                      "It will be difficult to change your name in the future. "

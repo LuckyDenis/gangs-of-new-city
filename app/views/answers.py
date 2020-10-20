@@ -13,32 +13,32 @@ i18n = I18N()
 
 
 class BaseAnswers:
-    def __init__(self, state):
-        self.state = state
-
+    @staticmethod
     async def get(self):
         raise NotImplementedError()
 
 
 class NewUser(BaseAnswers):
-    async def get(self):
-        i18n.set_locale(self.state["language"])
+    @staticmethod
+    async def get(state):
+        i18n.set_locale(state["language"])
         keyboard = k.StartKeyboard.get()
         return {
-            "chat_id": self.state["id"],
+            "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.StartMessage.get_template({}),
+            "text": t.StartMessage.get_template(),
             "keyboard": keyboard
         }
 
 
 class UserIsNotAgree(BaseAnswers):
-    async def get(self):
-        i18n.set_locale(self.state["language"])
-        text = t.UserIsNotAgree.get_template({})
+    @staticmethod
+    async def get(state):
+        i18n.set_locale(state["language"])
+        text = t.UserIsNotAgree.get_template()
         keyboard = k.StartKeyboard.get()
         return {
-            "chat_id": self.state["id"],
+            "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
             "text": text,
             "keyboard": keyboard
@@ -46,33 +46,36 @@ class UserIsNotAgree(BaseAnswers):
 
 
 class UserIsAgree(BaseAnswers):
-    async def get(self):
-        i18n.set_locale(self.state["language"])
+    @staticmethod
+    async def get(state):
+        i18n.set_locale(state["language"])
         keyboard = k.Remove.get()
         return {
-            "chat_id": self.state["id"],
+            "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsAgree.get_template({}),
+            "text": t.UserIsAgree.get_template(),
             "keyboard": keyboard
         }
 
 
 class UserIsAgreeHint(BaseAnswers):
-    async def get(self):
-        i18n.set_locale(self.state["language"])
+    @staticmethod
+    async def get(state):
+        i18n.set_locale(state["language"])
         keyboard = k.Remove.get()
         return {
-            "chat_id": self.state["id"],
+            "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsAgreeHint.get_template({}),
+            "text": t.UserIsAgreeHint.get_template(),
             "keyboard": keyboard
         }
 
 
 class UserIsNotNew(BaseAnswers):
-    async def get(self):
+    @staticmethod
+    async def get(state):
         return {
-            "chat_id": self.state["id"],
+            "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
             "text": "нашли пользователя"
         }
