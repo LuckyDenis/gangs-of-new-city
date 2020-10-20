@@ -1,13 +1,10 @@
 # coding: utf8
 
-from datetime import datetime
 from logging import getLogger
 from pprint import pformat
 
-import uvloop
 
 from app.core import stations as st
-from app.core.statuses import Statuses as Code
 from app.core.train import Train
 
 
@@ -37,8 +34,8 @@ class BaseItinerary:
         """
         self.add_checkpoint()
         for station in self.stations():
-            status = await station(self.train).traveled()
-            if status == Code.EMERGENCY_STOP:
+            is_ok = await station(self.train).traveled()
+            if not is_ok:
                 break
         logger.info(pformat(self.train.payload))
 

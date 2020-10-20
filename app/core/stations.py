@@ -14,7 +14,6 @@
 централизованного хранения информации о запросах
 и данных с которыми работает база данных.
 """
-from pprint import pformat, pp
 from logging import getLogger
 
 import app.database as db
@@ -141,7 +140,7 @@ class IsNewUserSt(BaseSt):
             "id": self.train.data["id"],
             "language": self.train.data["language"]
         }
-        self.answers = await an.UserIsNotNew(state).get()
+        self.answers = await an.UserIsNotNew.get(state)
 
     async def traveled(self):
         user = self.train.states['user']
@@ -168,7 +167,7 @@ class UserCreateSt(BaseSt):
             "id": self.train.data["id"],
             "language": self.train.data["language"]
         }
-        self.train.answers = await an.NewUser(state).get()
+        self.train.answers = await an.NewUser.get(state)
 
     def query_data(self):
         query_name = "create_user"
@@ -209,7 +208,7 @@ class DoesUserHaveReferralIdSt(BaseSt):
     Дабавленные данные: None
     """
     async def traveled(self):
-        referral_id = self.train.data["referral_id"]
+        referral_id = self.train.data.get("referral_id")
         if not referral_id:
             return Code.EMERGENCY_STOP
 
@@ -623,13 +622,11 @@ class ViewHeroSt(BaseSt):
 
 class UserIsNotAgreeSt(BaseSt):
     async def add_out_answers(self):
-        pp(self.train.payload)
-        pp(self.train.data["id"])
         state = {
             "id": self.train.data["id"],
             "language": self.train.states["user"]["language"]
         }
-        self.train.answers = await an.UserIsNotAgree(state).get()
+        self.train.answers = await an.UserIsNotAgree.get(state)
 
     def query_data(self):
         query_name = "is_not_agree"
@@ -658,7 +655,7 @@ class UserIsAgreeHintSt(BaseSt):
             "id": self.train.data["id"],
             "language": self.train.states["user"]["language"]
         }
-        self.train.answers = await an.UserIsAgreeHint(state).get()
+        self.train.answers = await an.UserIsAgreeHint.get(state)
 
     def query_data(self):
         query_name = "is_agree"
@@ -689,7 +686,7 @@ class UserIsAgreeSt(BaseSt):
             "id": self.train.data["id"],
             "language": self.train.states["user"]["language"]
         }
-        self.train.answers = await an.UserIsAgree(state).get()
+        self.train.answers = await an.UserIsAgree.get(state)
 
     def query_data(self):
         query_name = "is_agree"

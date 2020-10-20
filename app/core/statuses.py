@@ -9,10 +9,6 @@ from enum import Enum, auto, unique
 """
 
 
-@unique
-class Statuses(Enum):
-    EMERGENCY_STOP = auto()
-    IS_OK = auto()
-
-    def __repr__(self):
-        return self._name_
+class Statuses:
+    EMERGENCY_STOP = False
+    IS_OK = True
