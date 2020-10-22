@@ -51,13 +51,59 @@ class BaseSt:
     def answers(self, answer):
         self.train.answers = answer
 
+    @answers.deleter
+    def answers(self):
+        del self.train.answers
+
     async def add_exception_answer(self):
-        self.train.answers = "что-то пошло не так, сообщите нам об этом"
+        """
+        Если в ходе выполнения запроса к базе мы получили ошибку,
+        то все полученные до этого ответы в `train.answers` будут
+        удаленны и добавлен ответ об ошибке. В реализации метода
+        `BaseSt._traveled` нужно сделать проверку на ошибку явно.
+        """
+
+        del self.train.answers
+        state = {
+            "id": self.train.data["id"]
+        }
+        self.answers = await an.SystemException.get(state)
 
     async def traveled(self):
+        """
+        Работу с ошибками проводим тут, для инкапсуляции логики
+        в одном месте и оставить чистой логику других объектов.
+        :return: Bool
+        """
+
+        is_ok = False
+        try:
+            is_ok = await self._traveled()
+        except KeyError as e:
+            await self.add_exception_answer()
+        return is_ok
+
+    async def _traveled(self):
+        """
+        Тут в поражденных станция пишем логику работы.
+        :return: Bool
+        """
         raise NotImplementedError
 
     async def execution(self, storage_query, query_name):
+        """
+        Передаем в эту функцию парамметры, а не вызываем
+        абстрактные методы, для сохранения гибкости классов.
+        Возможна ситуация, когда нам потребуется в одном классе
+        выполнить два запроса к базе данных.
+
+        :param storage_query: передаем функцию,
+            которая при вызове выполнит запрос к базе данных
+        :param query_name: имя запроса, по которому можно
+            найти запрос в train.queries
+        :return: возращаем словарь, в котором данные от базы
+            или пустой в случае неудачи.
+        """
         result = {}
         try:
             result = await storage_query(
@@ -79,7 +125,7 @@ class StartRailwayDepotSt(BaseSt):
     todo:
     В этот класс можно встроить старт метрики `timeit`.
     """
-    async def traveled(self):
+    async def _traveled(self):
         return Code.IS_OK
 
 
@@ -89,7 +135,7 @@ class FinishRailwayDepotSt(BaseSt):
     todo:
     В этот класс можно встроить финиш метрики `timeit`.
     """
-    async def traveled(self):
+    async def _traveled(self):
         return Code.IS_OK
 
 
@@ -113,7 +159,7 @@ class GetUserSt(BaseSt):
     def storage_query():
         return db.User.get
 
-    async def traveled(self):
+    async def _traveled(self):
         user = await self.execution(
             self.storage_query(), self.query_data())
         self.train.states["user"] = user
@@ -142,7 +188,7 @@ class IsNewUserSt(BaseSt):
         }
         self.answers = await an.UserIsNotNew.get(state)
 
-    async def traveled(self):
+    async def _traveled(self):
         user = self.train.states['user']
         if user:  # Пользователь существует
             await self.add_out_answer()
@@ -184,7 +230,7 @@ class UserCreateSt(BaseSt):
     def storage_query():
         return db.User.create
 
-    async def traveled(self):
+    async def _traveled(self):
         user = await self.execution(
             self.storage_query(), self.query_data())
         self.train.states["user"] = user
@@ -207,7 +253,7 @@ class DoesUserHaveReferralIdSt(BaseSt):
     Обезателные данные: ['data']['referral_id']
     Дабавленные данные: None
     """
-    async def traveled(self):
+    async def _traveled(self):
         referral_id = self.train.data.get("referral_id")
         if not referral_id:
             return Code.EMERGENCY_STOP
@@ -236,7 +282,7 @@ class GetInviterSt(BaseSt):
     def storage_query():
         return db.User.get
 
-    async def traveled(self):
+    async def _traveled(self):
         inviter = await self.execution(
             self.storage_query(), self.query_data())
         self.train.states["inviter"] = inviter
@@ -256,7 +302,7 @@ class IsThereInviterSt(BaseSt):
     Обезательные данные: ['states']['inviter']
     Добавленные данные: None
     """
-    async def traveled(self):
+    async def _traveled(self):
         inviter = self.train.states["inviter"]
         if not inviter:
             return Code.EMERGENCY_STOP
@@ -276,7 +322,7 @@ class UserIsInviterSt(BaseSt):
     todo:
     Подумать, может ли возникнуть така ситуация.
     """
-    async def traveled(self):
+    async def _traveled(self):
         user = self.train.states['user']
         inviter = self.train.states['inviter']
         if user["id"] == inviter["id"]:
@@ -310,7 +356,7 @@ class AddReferralDataSt(BaseSt):
     def storage_query():
         return db.Referral.create
 
-    async def traveled(self):
+    async def _traveled(self):
         await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -334,9 +380,12 @@ class IsThereUserSt(BaseSt):
     Добавленные данные: ['answers']['answer'] или None
     """
     async def add_out_answer(self):
-        self.answers = "не нашли пользователя"
+        state = {
+            "id": self.train.data["id"]
+        }
+        self.answers = await an.UserIsNotFound.get(state)
 
-    async def traveled(self):
+    async def _traveled(self):
         user = self.train.states['user']
         if not user:  # Пользователь не существует
             await self.add_out_answer()
@@ -356,7 +405,7 @@ class IsUserBlockedSt(BaseSt):
     async def add_out_answer(self):
         self.answers = "Пользователь заблокирован"
 
-    async def traveled(self):
+    async def _traveled(self):
         user = self.train.states["user"]
         if user and user["is_blocked"]:
             await self.add_out_answer()
@@ -384,7 +433,7 @@ class GetHeroSt(BaseSt):
     def storage_query():
         return db.Hero.get
 
-    async def traveled(self):
+    async def _traveled(self):
         hero = await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -408,7 +457,7 @@ class IsNewHeroSt(BaseSt):
     async def add_out_answers(self):
         self.train.answers = "у вас уже есть герой"
 
-    async def traveled(self):
+    async def _traveled(self):
         hero = self.train.states["user"]['is_hero']
         if hero:
             await self.add_out_answers()
@@ -417,11 +466,11 @@ class IsNewHeroSt(BaseSt):
         return Code.IS_OK
 
 
-class DoesUserHAveAgreeingSt(BaseSt):
+class DoesUserHaveAgreeingSt(BaseSt):
     async def add_out_answer(self):
         self.train.answers = ""
 
-    async def traveled(self):
+    async def _traveled(self):
         has_agreeing = self.train.states["user"]["has_agreeing"]
         if not has_agreeing:
             await self.add_out_answer()
@@ -457,7 +506,7 @@ class IsNewHeroUniqueSt(BaseSt):
     def storage_query():
         return db.Hero.get_by_nick
 
-    async def traveled(self):
+    async def _traveled(self):
         is_hero = await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -500,7 +549,7 @@ class NewHeroCreateSt(BaseSt):
     def storage_query():
         return db.Hero.create
 
-    async def traveled(self):
+    async def _traveled(self):
         new_hero = await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -532,7 +581,7 @@ class GetWalletSt(BaseSt):
     def storage_query():
         return db.Wallet.get
 
-    async def traveled(self):
+    async def _traveled(self):
         wallet = await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -556,7 +605,7 @@ class IsThereWalletSt(BaseSt):
     async def add_out_answers(self):
         self.train.answers = "Создайте героя"
 
-    async def traveled(self):
+    async def _traveled(self):
         wallet = self.train.states["wallet"]
         if not wallet:
             await self.add_out_answers()
@@ -577,7 +626,7 @@ class ViewWalletSt(BaseSt):
     async def add_out_answers(self):
         self.train.answers = "кошелек игрока"
 
-    async def traveled(self):
+    async def _traveled(self):
         await self.add_out_answers()
         return Code.IS_OK
 
@@ -594,7 +643,7 @@ class IsThereHeroSt(BaseSt):
     async def add_out_answers(self):
         self.train.answers = "Создайте героя"
 
-    async def traveled(self):
+    async def _traveled(self):
         hero = self.train.states["hero"]
         if not hero:
             await self.add_out_answers()
@@ -615,7 +664,7 @@ class ViewHeroSt(BaseSt):
     async def add_out_answers(self):
         self.train.answers = "Информация об герои игрока"
 
-    async def traveled(self):
+    async def _traveled(self):
         await self.add_out_answers()
         return Code.IS_OK
 
@@ -639,7 +688,7 @@ class UserIsNotAgreeSt(BaseSt):
     def storage_query():
         return db.User.is_not_agree_policy
 
-    async def traveled(self):
+    async def _traveled(self):
         await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -668,7 +717,7 @@ class UserIsAgreeHintSt(BaseSt):
     def storage_query():
         return db.User.is_agree_policy
 
-    async def traveled(self):
+    async def _traveled(self):
         await self.execution(
             self.storage_query(), self.query_data()
         )
@@ -699,7 +748,7 @@ class UserIsAgreeSt(BaseSt):
     def storage_query():
         return db.User.is_agree_policy
 
-    async def traveled(self):
+    async def _traveled(self):
         await self.execution(
             self.storage_query(), self.query_data()
         )

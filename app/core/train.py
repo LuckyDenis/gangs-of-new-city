@@ -59,6 +59,10 @@ class Train:
     def answers(self, answer):
         self.payload["answers"].append(answer)
 
+    @answers.deleter
+    def answers(self):
+        self.payload["answers"].clear()
+
     @property
     def data(self):
         return self.payload["data"]
