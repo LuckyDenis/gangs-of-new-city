@@ -79,3 +79,23 @@ class UserIsNotNew(BaseAnswers):
             "message_type": Types.TEXT_MESSAGE,
             "text": "нашли пользователя"
         }
+
+
+class UserIsNotFound(BaseAnswers):
+    @staticmethod
+    async def get(state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": "не нашли пользователя"
+        }
+
+
+class SystemException(BaseAnswers):
+    @staticmethod
+    async def get(state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": "нашли ошибку"
+        }
