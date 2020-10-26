@@ -79,7 +79,7 @@ class BaseSt:
         is_ok = False
         try:
             is_ok = await self._traveled()
-        except KeyError as e:
+        except KeyError:
             await self.add_exception_answer()
         return is_ok
 
@@ -706,25 +706,8 @@ class UserIsAgreeHintSt(BaseSt):
         }
         self.train.answers = await an.UserIsAgreeHint.get(state)
 
-    def query_data(self):
-        query_name = "is_agree"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"]
-        }
-        return query_name
-
-    @staticmethod
-    def storage_query():
-        return db.User.is_agree_policy
-
     async def _traveled(self):
-        await self.execution(
-            self.storage_query(), self.query_data()
-        )
-
-        if self.exception:
-            return Code.EMERGENCY_STOP
-
+        # todo: Добавить проверку на подсказки
         await self.add_out_answers()
         return Code.IS_OK
 
