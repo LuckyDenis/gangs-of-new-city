@@ -36,7 +36,8 @@ class GinoMiddleware(BaseMiddleware):
 
     async def shutdown(self):
         if self.engine:
-            engine, db.bind = db.bind, None
-            await engine.close()
+            self.engine, db.bind = db.bind, None
+            await self.engine.close()
         else:
             db.bind = None
+        self.engine = None
