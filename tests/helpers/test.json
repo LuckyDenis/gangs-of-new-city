@@ -1,0 +1,81 @@
+{
+  "logging": {
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+        "standard": {
+          "datermt": "%d.%m.%Y (%H:%M:%S)",
+          "format": "%(filename)+20s [ LINE:%(lineno)-4s] %(levelname)-8s [%(asctime)s] %(message)s"
+      }
+    },
+    "handlers": {
+      "default": {
+        "level": "INFO",
+        "formatter": "standard",
+        "class": "logging.StreamHandler",
+        "stream": "ext://sys.stdout"
+      },
+      "file": {
+        "()": "ext://__main__.journal.owned_rotating_file_handler",
+        "level": "INFO",
+        "formatter": "standard",
+        "filename": "./app.log",
+        "max_bytes": 1024,
+        "backup_count": 3
+      }
+    },
+    "loggers": {
+      "": {
+        "handlers": ["default"],
+        "level": "DEBUG",
+        "propagate": true
+      },
+      "gino": {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": false
+      },
+      "aiogram": {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": false
+      },
+      "stations": {
+        "handlers": ["default"],
+        "level": "INFO",
+        "propagate": false
+      }
+    }
+  },
+  "database": {
+    "version": 1,
+    "connect": {
+      "engine": "postgresql",
+      "port": 5432,
+      "host": "127.0.0.1",
+      "login": "login",
+      "password": "password",
+      "name": "name"
+      },
+    "pool": {
+      "min": 5,
+      "max": 5
+    }
+  },
+  "bot": {
+    "version": 1,
+    "skip_update": false,
+    "token": "31231",
+    "polling": true,
+    "webhook": {
+      "host": "",
+      "port": -1,
+      "path": "/webhook/"
+    }
+  },
+  "i18n": {
+    "version": 1,
+    "path": "./locales",
+    "domain": "messages"
+  }
+}

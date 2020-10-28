@@ -7,7 +7,7 @@ from app.views import answers as an
 EXCEPTION_ANSWER = {"test": "foo"}
 
 
-class TestSt(BaseSt):
+class FooSt(BaseSt):
     async def _traveled(self):
         return True
 
@@ -125,7 +125,7 @@ async def test__inside_traveled_not_realize(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_is_ok(train):
-    is_ok = await TestSt(train).traveled()
+    is_ok = await FooSt(train).traveled()
     assert is_ok is True
 
 
