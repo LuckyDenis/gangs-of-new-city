@@ -3,7 +3,6 @@ from logging import getLogger
 
 
 from aiogram import types as t
-from app.helpers import Cmds
 from app import core
 from app.views import Types
 
@@ -13,7 +12,9 @@ from aiogram import Bot
 from aiogram.types import ParseMode
 from app.middlewares.storage import GinoMiddleware
 from app.middlewares.unique_id import UniqueIdMiddleware
-from app.views.emoji import emojize
+from app.views import Cmds
+from app.views import ECmds
+
 
 import argparse
 
@@ -37,7 +38,7 @@ logger = getLogger(__name__)
 
 
 # ----- cmd: start ----- #
-@dp.message_handler(commands=[str(Cmds.START)])
+@dp.message_handler(commands=Cmds.START.get())
 async def cmd_start(message: t.Message, unique_id):
     data = {
         "is_bot": message.from_user.is_bot,
@@ -54,8 +55,8 @@ async def cmd_start(message: t.Message, unique_id):
 
 
 # ----- cmd: ano ----- #
-@dp.message_handler(regexp=f"^{emojize(':warning:')}")
-@dp.message_handler(commands=[str(Cmds.ANO)])
+@dp.message_handler(regexp=ECmds.WARNING.get())
+@dp.message_handler(commands=Cmds.ANO.get())
 async def cmd_ano(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
@@ -69,8 +70,8 @@ async def cmd_ano(message: t.Message, unique_id):
 
 
 # ----- cmd: ayes ----- #
-@dp.message_handler(regexp=f"^{emojize(':white_check_mark:')}")
-@dp.message_handler(commands=[str(Cmds.AYES)])
+@dp.message_handler(regexp=ECmds.WHITE_CHECK_MARK.get())
+@dp.message_handler(commands=Cmds.AYES.get())
 async def cmd_ayes(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
@@ -78,6 +79,22 @@ async def cmd_ayes(message: t.Message, unique_id):
         "datetime": message.date.date(),
     }
     train = core.UserIsAgreeItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- cmd: hname ----- #
+@dp.message_handler(commands=Cmds.HNAME.get())
+async def cmd_hname(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date.date(),
+        "hero_nick": message.get_args()
+    }
+
+    train = core.NewHeroItinerary(data)
     await train.move()
     answers = train.get_answers()
     await done(answers)

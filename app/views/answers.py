@@ -13,15 +13,64 @@ i18n = I18N()
 
 
 class BaseAnswers:
-    @staticmethod
-    async def get(self):
+    @classmethod
+    async def get(cls, state):
+        i18n.set_locale(state["language"])
+        return await cls._get(state)
+
+    @classmethod
+    async def _get(cls, state):
         raise NotImplementedError()
 
 
+class SystemException(BaseAnswers):
+    """
+    SystemException
+
+    Перезагружаем метод `get` для того,
+    что бы использовать язык по умолчанию, так как
+    не знаем что могло сломаться, а пользователю
+    обезательно нужно отдать ответ.
+    """
+    @classmethod
+    async def get(cls, state):
+        return await cls._get(state)
+
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": "нашли ошибку"
+        }
+
+
+class UserIsNotFound(BaseAnswers):
+    """
+    UserIsNotFound
+
+    Перезагружаем метод `get` так как не нашли
+    пользователя, а следовательно, у нас нет языка,
+    в котором надо отдать ответ, по этому используем
+    язык по умолчанию, пользователю обезательно
+    нужно отдать хоть какой-то ответ.
+    """
+    @classmethod
+    async def get(cls, state):
+        return await cls._get(state)
+
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": "не нашли пользователя"
+        }
+
+
 class NewUser(BaseAnswers):
-    @staticmethod
-    async def get(state):
-        i18n.set_locale(state["language"])
+    @classmethod
+    async def _get(cls, state):
         keyboard = k.StartKeyboard.get()
         return {
             "chat_id": state["id"],
@@ -32,23 +81,20 @@ class NewUser(BaseAnswers):
 
 
 class UserIsNotAgree(BaseAnswers):
-    @staticmethod
-    async def get(state):
-        i18n.set_locale(state["language"])
-        text = t.UserIsNotAgree.get_template()
+    @classmethod
+    async def _get(cls, state):
         keyboard = k.StartKeyboard.get()
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": text,
+            "text": t.UserIsNotAgree.get_template(),
             "keyboard": keyboard
         }
 
 
 class UserIsAgree(BaseAnswers):
-    @staticmethod
-    async def get(state):
-        i18n.set_locale(state["language"])
+    @classmethod
+    async def _get(cls, state):
         keyboard = k.Remove.get()
         return {
             "chat_id": state["id"],
@@ -59,9 +105,8 @@ class UserIsAgree(BaseAnswers):
 
 
 class UserIsAgreeHint(BaseAnswers):
-    @staticmethod
-    async def get(state):
-        i18n.set_locale(state["language"])
+    @classmethod
+    async def _get(cls, state):
         keyboard = k.Remove.get()
         return {
             "chat_id": state["id"],
@@ -72,8 +117,8 @@ class UserIsAgreeHint(BaseAnswers):
 
 
 class UserIsNotNew(BaseAnswers):
-    @staticmethod
-    async def get(state):
+    @classmethod
+    async def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -81,21 +126,11 @@ class UserIsNotNew(BaseAnswers):
         }
 
 
-class UserIsNotFound(BaseAnswers):
-    @staticmethod
-    async def get(state):
+class HeroNickIsNotCorrect(BaseAnswers):
+    @classmethod
+    async def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": "не нашли пользователя"
-        }
-
-
-class SystemException(BaseAnswers):
-    @staticmethod
-    async def get(state):
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": "нашли ошибку"
+            "text": t.HeroNickIsNotCorrect.get_template()
         }

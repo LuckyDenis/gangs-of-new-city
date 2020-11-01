@@ -11,6 +11,7 @@ STATIONS = [
     st.GetUserSt,
     st.IsThereUserSt,
     st.IsUserBlockedSt,
+    st.IsCorrectHeroNickSt,
     st.IsNewHeroSt,
     st.IsNewHeroUniqueSt,
     st.NewHeroCreateSt,

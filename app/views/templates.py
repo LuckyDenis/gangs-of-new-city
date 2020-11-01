@@ -1,7 +1,7 @@
 # coding: utf8
-from app.helpers import Cmds
+from .cmds import Commands as Cmds
 from .i18n import I18N
-from .emoji import emojize
+from .icons import emojize
 
 
 i18n = I18N()
@@ -54,7 +54,7 @@ class UserIsAgree(BaseMessage):
     def get_template(states=None):
         template = _(":guardsman: [ <b>Guardsman</b> ]\n"
                      "Great! Now tell me your name. "
-                     "To do this, send {cmd_name} NickName.\n\n"
+                     "To do this, send {cmd_name} NickName."
                      ).format(
             cmd_name=Cmds.HNAME.mk()
         )
@@ -71,6 +71,23 @@ class UserIsAgreeHint(BaseMessage):
                      "It will be difficult to change your name in the future. "
                      "The name must be unique and must "
                      "not be longer than 20 characters.")
+        if states:
+            template.format(states)
+        return emojize(template)
+
+
+class HeroNickIsNotCorrect(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        template = _(":guardsman: [ <b>Guardsman</b> ]\n"
+                     "The selected hero name is not supported. "
+                     "The hero's name can contain uppercase or "
+                     "lowercase Latin letters, decimal digits, "
+                     "a period, and underscores. The hero's name "
+                     "must be between 5 and 20 characters long "
+                     "and unique. To do this, send {cmd_name} NickName."
+                     ).format(
+            cmd_name=Cmds.HNAME.mk())
         if states:
             template.format(states)
         return emojize(template)
