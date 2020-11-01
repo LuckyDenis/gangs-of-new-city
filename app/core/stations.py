@@ -19,7 +19,7 @@ from logging import getLogger
 import app.database as db
 from .statuses import Statuses as Code
 from app.views import answers as an
-
+from re import fullmatch
 logger = getLogger("stations")
 
 
@@ -408,6 +408,32 @@ class IsUserBlockedSt(BaseSt):
     async def _traveled(self):
         user = self.train.states["user"]
         if user and user["is_blocked"]:
+            await self.add_out_answer()
+            return Code.EMERGENCY_STOP
+
+        return Code.IS_OK
+
+
+class IsCorrectHeroNickSt(BaseSt):
+    """
+    IsCorrectHeroNickSt
+
+    Класс проверяет, что выбранное имя для героя -
+    корректное. Имя может содержать: a-z, A-Z, 0-9, точку,
+    нижнее подчеркивание.
+    """
+
+    async def add_out_answer(self):
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.states["user"]["language"]
+        }
+        self.answers = await an.HeroNickIsNotCorrect.get(state)
+
+    async def _traveled(self):
+        hero_nick = self.train.data["hero_nick"]
+
+        if not fullmatch(r"^[A-Za-z0-9_.]{5,20}$", hero_nick):
             await self.add_out_answer()
             return Code.EMERGENCY_STOP
 

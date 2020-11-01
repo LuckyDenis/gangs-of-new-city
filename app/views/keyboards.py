@@ -3,7 +3,7 @@
 from aiogram.types import ReplyKeyboardMarkup
 from aiogram.types import KeyboardButton
 from aiogram.types import ReplyKeyboardRemove
-from .emoji import emojize as e
+from .icons import emojize as e
 from .i18n import I18N
 
 i18n = I18N()
