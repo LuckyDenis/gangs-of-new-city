@@ -65,7 +65,8 @@ class BaseSt:
 
         del self.train.answers
         state = {
-            "id": self.train.data["id"]
+            "id": self.train.data["id"],
+            "unique_id": self.train.data["unique_id"]
         }
         self.answers = await an.SystemException.get(state)
 

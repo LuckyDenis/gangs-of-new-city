@@ -12,7 +12,7 @@ logger = logging.getLogger("answers")
 i18n = I18N()
 
 
-class BaseAnswers:
+class BaseAnswer:
     @classmethod
     async def get(cls, state):
         i18n.set_locale(state["language"])
@@ -23,7 +23,7 @@ class BaseAnswers:
         raise NotImplementedError()
 
 
-class SystemException(BaseAnswers):
+class SystemException(BaseAnswer):
     """
     SystemException
 
@@ -41,11 +41,12 @@ class SystemException(BaseAnswers):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": "нашли ошибку"
+            "text": t.SystemException.get_template(state),
+            "keyboard": k.SystemException.get()
         }
 
 
-class UserIsNotFound(BaseAnswers):
+class UserIsNotFound(BaseAnswer):
     """
     UserIsNotFound
 
@@ -68,7 +69,7 @@ class UserIsNotFound(BaseAnswers):
         }
 
 
-class NewUser(BaseAnswers):
+class NewUser(BaseAnswer):
     @classmethod
     async def _get(cls, state):
         keyboard = k.StartKeyboard.get()
@@ -80,7 +81,7 @@ class NewUser(BaseAnswers):
         }
 
 
-class UserIsNotAgree(BaseAnswers):
+class UserIsNotAgree(BaseAnswer):
     @classmethod
     async def _get(cls, state):
         keyboard = k.StartKeyboard.get()
@@ -92,7 +93,7 @@ class UserIsNotAgree(BaseAnswers):
         }
 
 
-class UserIsAgree(BaseAnswers):
+class UserIsAgree(BaseAnswer):
     @classmethod
     async def _get(cls, state):
         keyboard = k.Remove.get()
@@ -104,7 +105,7 @@ class UserIsAgree(BaseAnswers):
         }
 
 
-class UserIsAgreeHint(BaseAnswers):
+class UserIsAgreeHint(BaseAnswer):
     @classmethod
     async def _get(cls, state):
         keyboard = k.Remove.get()
@@ -116,7 +117,7 @@ class UserIsAgreeHint(BaseAnswers):
         }
 
 
-class UserIsNotNew(BaseAnswers):
+class UserIsNotNew(BaseAnswer):
     @classmethod
     async def _get(cls, state):
         return {
@@ -126,7 +127,7 @@ class UserIsNotNew(BaseAnswers):
         }
 
 
-class HeroNickIsNotCorrect(BaseAnswers):
+class HeroNickIsNotCorrect(BaseAnswer):
     @classmethod
     async def _get(cls, state):
         return {

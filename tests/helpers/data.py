@@ -6,5 +6,6 @@ DATA = {
     "id": 123456789,
     "language": Languages.ENGLISH,
     "datetime": 123456789,
-    "is_bot": False
+    "is_bot": False,
+    "unique_id": "123456789-123"
 }

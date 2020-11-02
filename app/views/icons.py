@@ -7,4 +7,4 @@ def emojize(text):
 
 
 def demojize(text):
-    return emoji.demojize(text)
+    return emoji.demojize(text, use_aliases=True)
