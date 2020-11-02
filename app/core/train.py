@@ -20,6 +20,9 @@ class Train:
 
     payload (dict) непосредственный контейнер для хранения данных
     """
+
+    __slots__ = ["payload"]
+
     def __init__(self, data):
         self.payload = {
             "states": dict(),

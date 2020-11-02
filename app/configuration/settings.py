@@ -50,11 +50,7 @@ class Setup:
         self._read()
 
     def _read(self):
-        try:
-            self._data = builder.parse_config(self._path)
-        except (OSError, TypeError) as err:
-            print(err)
-            sys.exit(errno.EPERM)
+        self._data = builder.parse_config(self._path)
 
     @property
     def logging(self):
