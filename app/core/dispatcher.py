@@ -155,6 +155,25 @@ class UserIsAgreeItinerary(BaseItinerary):
         ]
 
 
+class ViewLanguagesItinerary(BaseItinerary):
+    """
+    cmd: /lang
+    """
+    def required_keys(self):
+        return ["id", "datetime"]
+
+    def stations(self):
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.UserTimeVisitedUpdateSt,
+            st.DoesUserHaveAgreeingSt,
+            st.ViewLanguagesSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
 class NewHeroItinerary(BaseItinerary):
     """
     cmd: /name "hero"

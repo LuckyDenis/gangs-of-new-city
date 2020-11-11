@@ -17,7 +17,7 @@ def up_train(train):
 @pytest.mark.stations
 async def test__traveled(up_train):
     train = up_train
-    train.states["user"]["has_agreeing"] = True
+    train.states["user"]["is_agreeing"] = True
     status = await DoesUserHaveAgreeingSt(train).traveled()
     assert status is Code.IS_OK
 

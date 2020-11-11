@@ -41,10 +41,11 @@ class User(db.Model):
     visited = sa.Column(sa.DateTime())
     registered = sa.Column(sa.DateTime())
     is_bot = sa.Column(sa.Boolean(), default=False)
-    has_agreeing = sa.Column(sa.Boolean(), default=False)
+    is_agreeing = sa.Column(sa.Boolean(), default=False)
     is_developer = sa.Column(sa.Boolean(), default=False)
     is_tester = sa.Column(sa.Boolean(), default=False)
     is_blocked = sa.Column(sa.Boolean(), default=False)
+    is_hint = sa.Column(sa.Boolean(), default=True)
 
     @classmethod
     async def get(cls, states):
@@ -54,8 +55,9 @@ class User(db.Model):
              cls.is_bot,
              cls.is_blocked,
              cls.is_developer,
-             cls.has_agreeing,
+             cls.is_agreeing,
              cls.is_tester,
+             cls.is_hint,
              Hero.nick.label("is_hero")]
         ).select_from(
             cls.outerjoin(
@@ -78,16 +80,29 @@ class User(db.Model):
     @classmethod
     async def is_agree_policy(cls, states):
         async with db.transaction():
-            cls.update.values(
-                has_agreeing=True
-            ).where(cls.id == states["id"])
+            await cls.update.values(
+                is_agreeing=True
+            ).where(
+                cls.id == states["id"]
+            ).gino.status()
 
     @classmethod
     async def is_not_agree_policy(cls, states):
         async with db.transaction():
-            cls.update.values(
-                has_agreeing=False
-            ).where(cls.id == states["id"])
+            await cls.update.values(
+                is_agreeing=False
+            ).where(
+                cls.id == states["id"]
+            ).gino.status()
+
+    @classmethod
+    async def user_time_visited_update(cls, states):
+        async with db.transaction():
+            await cls.update.values(
+                visited=states["visited"]
+            ).where(
+                cls.id == states["id"]
+            ).gino.status()
 
 
 class Referral(db.Model):
