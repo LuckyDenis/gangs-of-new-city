@@ -25,7 +25,7 @@ class StartMessage(BaseMessage):
             "i_cmd_not_agree": ECmds.WARNING.mk(),
         }
 
-        template = _(":guardsman: [ <b>Guardsman</b> ]\n"
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
                      "To get to the city, you need to register."
                      "Read these documents first. This is a privacy "
                      "policy and a license agreement. To continue, "
@@ -70,7 +70,7 @@ class UserIsNotAgree(BaseMessage):
             "i_cmd_not_agree": ECmds.WARNING.mk(),
         }
 
-        template = _(":guardsman: [ <b>Guardsman</b> ]\n"
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
                      "Unfortunately, I cannot allow you to enter "
                      "the city until you have read and accepted the "
                      "license agreement and privacy policy.\n\n"
@@ -87,7 +87,7 @@ class UserIsAgree(BaseMessage):
             "cmd_name": Cmds.HNAME.mk(),
         }
 
-        template = _(":guardsman: [ <b>Guardsman</b> ]\n"
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
                      "Great! Now tell me your name. "
                      "To do this, send {cmd_name} NickName."
                      ).format(**format_data)
@@ -112,7 +112,7 @@ class HeroNickIsNotCorrect(BaseMessage):
         format_data = {
             "cmd_name": Cmds.HNAME.mk(),
         }
-        template = _(":guardsman: [ <b>Guardsman</b> ]\n"
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
                      "The selected hero name is not supported. "
                      "The hero's name can contain uppercase or "
                      "lowercase Latin letters, decimal digits, "
@@ -121,4 +121,51 @@ class HeroNickIsNotCorrect(BaseMessage):
                      "and unique. To do this, send {cmd_name} NickName."
                      ).format(**format_data)
 
+        return emojize(template)
+
+
+class ViewLanguages(BaseMessage):
+    @staticmethod
+    def get_template(state=None):
+        format_data = {
+            "cmd_ru": Cmds.RU.mk(),
+            "cmd_en": Cmds.EN.mk(),
+            "cmd_inn": Cmds.INN.mk(),
+            "i_cmd_ru": ECmds.RU.mk(),
+            "i_cmd_en": ECmds.EN.mk(),
+            "i_cmd_inn": ECmds.INN.mk()
+        }
+
+        template = _(":man_mage: [ <b> Mage Astutus </b>]\n"
+                     "You don't seem to be from around here. "
+                     "Since I am truly great, I can cast a "
+                     "spell on you to turn the local language "
+                     "into a suitable one for you. Choose "
+                     "which language is right for you.\n\n"
+                     "{i_cmd_en} English: {cmd_en}\n"
+                     "{i_cmd_ru} Russian: {cmd_ru}\n\n"
+                     "Return {i_cmd_inn} inn: {cmd_inn}"
+                     ).format(**format_data)
+
+        return emojize(template)
+
+
+class DoesUserHaveAgreeing(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_not_agree": Cmds.ANO.mk(),
+            "cmd_agree": Cmds.AYES.mk(),
+            "i_cmd_agree": ECmds.WHITE_CHECK_MARK.mk(),
+            "i_cmd_not_agree": ECmds.WARNING.mk(),
+        }
+
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+                     "The user agreement and privacy policy "
+                     "may have been changed, or you did not "
+                     "give your consent. Please read these "
+                     "documents carefully.\n\n"
+                     "{i_cmd_agree} To agree: {cmd_agree}\n"
+                     "{i_cmd_not_agree} Not to agree: {cmd_not_agree}"
+                     ).format(**format_data)
         return emojize(template)

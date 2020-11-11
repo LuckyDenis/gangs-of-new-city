@@ -45,7 +45,7 @@ async def cmd_start(message: t.Message, unique_id):
         "unique_id": unique_id,
         "id": message.chat.id,
         "language": message.from_user.language_code,
-        "datetime": message.date.date(),
+        "datetime": message.date,
         "referral_id": message.get_args() or False
     }
     train = core.NewUserItinerary(data)
@@ -61,7 +61,7 @@ async def cmd_ano(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
         "id": message.chat.id,
-        "datetime": message.date.date(),
+        "datetime": message.date,
     }
     train = core.UserIsNotAgreeItinerary(data)
     await train.move()
@@ -76,7 +76,7 @@ async def cmd_ayes(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
         "id": message.chat.id,
-        "datetime": message.date.date(),
+        "datetime": message.date,
     }
     train = core.UserIsAgreeItinerary(data)
     await train.move()
@@ -90,11 +90,27 @@ async def cmd_hname(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
         "id": message.chat.id,
-        "datetime": message.date.date(),
+        "datetime": message.date,
         "hero_nick": message.get_args()
     }
 
     train = core.NewHeroItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- cmd: lang ----- #
+@dp.message_handler(regexp=ECmds.LANG.get())
+@dp.message_handler(commands=Cmds.LANG.get())
+async def cmd_lang(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date,
+    }
+
+    train = core.ViewLanguagesItinerary(data)
     await train.move()
     answers = train.get_answers()
     await done(answers)

@@ -135,3 +135,25 @@ class HeroNickIsNotCorrect(BaseAnswer):
             "message_type": Types.TEXT_MESSAGE,
             "text": t.HeroNickIsNotCorrect.get_template()
         }
+
+
+class ViewLanguages(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.ViewLanguages.get_template(),
+            "keyboard": k.LanguagesKeyboard.get()
+        }
+
+
+class DoesUserHaveAgreeing(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.DoesUserHaveAgreeing.get_template(),
+            "keyboard": k.StartKeyboard.get()
+        }

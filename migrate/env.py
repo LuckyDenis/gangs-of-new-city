@@ -1,7 +1,8 @@
 # coding: utf8
 
 """
-alembic revision -m "first migration" --autogenerate --head head
+export CONFIG=path...
+alembic revision -m "commit`s message" --autogenerate --head head
 alembic upgrade head
 """
 

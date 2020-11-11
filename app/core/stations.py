@@ -142,8 +142,7 @@ class FinishRailwayDepotSt(BaseSt):
 
 class GetUserSt(BaseSt):
     """
-    Получаем пользоватя из базы, если пользователя нет -
-    добавляем пустой словарь.
+    Получаем пользователя или пустой словарь.
 
     Контракт:
     Обязательные данные: ['data']['id']
@@ -171,9 +170,32 @@ class GetUserSt(BaseSt):
         return Code.IS_OK
 
 
+class UserTimeVisitedUpdateSt(BaseSt):
+    def query_data(self):
+        query_name = "user_time_visited_update"
+        self.train.queries[query_name] = {
+            "id": self.train.data["id"],
+            "visited": self.train.data["datetime"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.User.user_time_visited_update
+
+    async def _traveled(self):
+        await self.execution(
+            self.storage_query(), self.query_data())
+
+        if self.exception:
+            return Code.EMERGENCY_STOP
+
+        return Code.IS_OK
+
+
 class IsNewUserSt(BaseSt):
     """
-    Проверка, что пользователя нет в базе.
+    Проверка, что пользователь новый.
 
     Если пользователь обнаружен, добавляем ответ в список answers
     и уходим с маршрута.
@@ -246,6 +268,7 @@ class UserCreateSt(BaseSt):
 class DoesUserHaveReferralIdSt(BaseSt):
     """
     Проверка наличия пригласившиего пользователя.
+
     Если такого пользователя нет, то дальше
     идти нет смысла. Для отсутсвующего пользователя
     передовать аргумент None.
@@ -264,7 +287,8 @@ class DoesUserHaveReferralIdSt(BaseSt):
 
 class GetInviterSt(BaseSt):
     """
-    Берем пригласившего пользователя из базыданных.
+    Берем пригласившего пользователя из базы данных.
+
     Делаем это для того, что бы убедиться, что пригла
     сивший пользователь существует.
 
@@ -296,8 +320,7 @@ class GetInviterSt(BaseSt):
 
 class IsThereInviterSt(BaseSt):
     """
-    Проверяем что нашли приглашающего в налей базе
-    данных.
+    Проверяем что нашли приглашающего в базе данных.
 
     Контракт:
     Обезательные данные: ['states']['inviter']
@@ -417,10 +440,9 @@ class IsUserBlockedSt(BaseSt):
 
 class IsCorrectHeroNickSt(BaseSt):
     """
-    IsCorrectHeroNickSt
+    Проверка имени героя на корректность.
 
-    Класс проверяет, что выбранное имя для героя -
-    корректное. Имя может содержать: a-z, A-Z, 0-9, точку,
+    Имя может содержать: a-z, A-Z, 0-9, точку,
     нижнее подчеркивание.
     """
 
@@ -494,12 +516,22 @@ class IsNewHeroSt(BaseSt):
 
 
 class DoesUserHaveAgreeingSt(BaseSt):
+    """
+    Пользователь разрешил обработку персональных данных.
+
+    Обезательные данные: ['states']['user']["is_agreeing']
+    Добавленные данные: ['answers']['answer'] или None
+    """
     async def add_out_answer(self):
-        self.train.answers = ""
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.states["user"]["language"]
+        }
+        self.train.answers = await an.DoesUserHaveAgreeing.get(state)
 
     async def _traveled(self):
-        has_agreeing = self.train.states["user"]["has_agreeing"]
-        if not has_agreeing:
+        is_agreeing = self.train.states["user"]["is_agreeing"]
+        if not is_agreeing:
             await self.add_out_answer()
             return Code.EMERGENCY_STOP
 
@@ -721,6 +753,7 @@ class UserIsNotAgreeSt(BaseSt):
         )
         if self.exception:
             return Code.EMERGENCY_STOP
+
         await self.add_out_answers()
         return Code.IS_OK
 
@@ -734,7 +767,10 @@ class UserIsAgreeHintSt(BaseSt):
         self.train.answers = await an.UserIsAgreeHint.get(state)
 
     async def _traveled(self):
-        # todo: Добавить проверку на подсказки
+        is_hint = self.train.states["user"]["is_hint"]
+        if not is_hint:
+            return Code.IS_OK
+
         await self.add_out_answers()
         return Code.IS_OK
 
@@ -766,5 +802,18 @@ class UserIsAgreeSt(BaseSt):
         if self.exception:
             return Code.EMERGENCY_STOP
 
+        await self.add_out_answers()
+        return Code.IS_OK
+
+
+class ViewLanguagesSt(BaseSt):
+    async def add_out_answers(self):
+        state = {
+            "id": self.train.data["id"],
+            "language": self.train.states["user"]["language"]
+        }
+        self.train.answers = await an.ViewLanguages.get(state)
+
+    async def _traveled(self):
         await self.add_out_answers()
         return Code.IS_OK

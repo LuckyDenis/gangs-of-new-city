@@ -8,7 +8,10 @@ from app.core.statuses import Statuses as Code
 
 @pytest.fixture()
 def up_train(train):
-    train.states["user"] = {"language": Languages.RUSSIAN}
+    train.states["user"] = {
+        "language": Languages.RUSSIAN,
+        "is_hint": True
+    }
     return train
 
 
@@ -17,6 +20,16 @@ def up_train(train):
 @pytest.mark.stations
 async def test__traveled(up_train):
     train = up_train
+    status = await UserIsAgreeHintSt(train).traveled()
+    assert status is Code.IS_OK
+
+
+@pytest.mark.unit
+@pytest.mark.core
+@pytest.mark.stations
+async def test__traveled_switch_off(up_train):
+    train = up_train
+    train.states["user"]["is_hint"] = False
     status = await UserIsAgreeHintSt(train).traveled()
     assert status is Code.IS_OK
 

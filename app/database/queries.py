@@ -55,6 +55,10 @@ class User:
     async def is_not_agree_policy(cls, query):
         await cls.model.is_not_agree_policy(query)
 
+    @classmethod
+    async def user_time_visited_update(cls, query):
+        await cls.model.user_time_visited_update(query)
+
 
 class Hero:
     model = None

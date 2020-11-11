@@ -1,16 +1,17 @@
 """first migration
 
-Revision ID: 5bde2f42071a
+Revision ID: 7bc9e351f444
 Revises: 
-Create Date: 2020-10-08 14:21:38.710930
+Create Date: 2020-11-11 14:53:16.833524
 
 """
 from alembic import op
 import sqlalchemy as sa
+from migrate import preset
 
 
 # revision identifiers, used by Alembic.
-revision = '5bde2f42071a'
+revision = '7bc9e351f444'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,10 +35,11 @@ def upgrade():
     sa.Column('visited', sa.DateTime(), nullable=True),
     sa.Column('registered', sa.DateTime(), nullable=True),
     sa.Column('is_bot', sa.Boolean(), nullable=True),
-    sa.Column('has_agreeing', sa.Boolean(), nullable=True),
+    sa.Column('is_agreeing', sa.Boolean(), nullable=True),
     sa.Column('is_developer', sa.Boolean(), nullable=True),
     sa.Column('is_tester', sa.Boolean(), nullable=True),
     sa.Column('is_blocked', sa.Boolean(), nullable=True),
+    sa.Column('is_hint', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['language'], ['language.code'], onupdate='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
@@ -58,6 +60,9 @@ def upgrade():
     sa.ForeignKeyConstraint(['inviter'], ['user.id'], onupdate='CASCADE', ondelete='CASCADE')
     )
     # ### end Alembic commands ###
+
+    # ### добавляем необходимые данные ###
+    preset.data_001.update_data(op)
 
 
 def downgrade():
