@@ -116,6 +116,23 @@ async def cmd_lang(message: t.Message, unique_id):
     await done(answers)
 
 
+# ----- cmd: inn ----- #
+@dp.message_handler(regexp=ECmds.INN.get())
+@dp.message_handler(commands=Cmds.INN.get())
+async def cmd_lang(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date,
+    }
+
+    train = core.ViewLanguagesItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- staff ----- #
 async def done(answers):
     for answer in answers:
         send_handler = send_handlers(

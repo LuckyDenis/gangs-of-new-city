@@ -5,21 +5,24 @@ from app.core.stations import IsThereHeroSt
 from app.core.statuses import Statuses as Code
 
 
-HERO = {
+USER = {
     "id": 123456789,
-    "nick": "test"
+    "is_hero": "test"
 }
 
-EMPTY_HERO = {}
+USER_IS_NOT_HAVE_HERO = {
+    "id": 123456789,
+    "is_hero": None
+}
 
-HERO_KEY = 'hero'
+USER_KEY = 'user'
 
 
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_hero_is_there(train):
-    train.states[HERO_KEY] = HERO
+    train.states[USER_KEY] = USER
     status = await IsThereHeroSt(train).traveled()
 
     assert status == Code.IS_OK
@@ -29,7 +32,7 @@ async def test__traveled_hero_is_there(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_hero_is_not_there(train):
-    train.states[HERO_KEY] = EMPTY_HERO
+    train.states[USER_KEY] = USER_IS_NOT_HAVE_HERO
     status = await IsThereHeroSt(train).traveled()
 
     assert status is Code.EMERGENCY_STOP

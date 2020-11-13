@@ -176,7 +176,7 @@ class ViewLanguagesItinerary(BaseItinerary):
 
 class NewHeroItinerary(BaseItinerary):
     """
-    cmd: /name "hero"
+    cmd: /hname "hero"
     """
     def required_keys(self):
         return ["id", "hero_nick"]
@@ -190,6 +190,8 @@ class NewHeroItinerary(BaseItinerary):
             st.StartRailwayDepotSt,
             st.GetUserSt,
             st.IsThereUserSt,
+            st.UserTimeVisitedUpdateSt,
+            st.DoesUserHaveAgreeingSt,
             st.IsUserBlockedSt,
             st.IsCorrectHeroNickSt,
             st.IsNewHeroSt,
@@ -236,8 +238,8 @@ class GetHeroItinerary(BaseItinerary):
             st.GetUserSt,
             st.IsThereUserSt,
             st.IsUserBlockedSt,
-            st.GetHeroSt,
             st.IsThereHeroSt,
+            st.GetHeroSt,
             st.ViewHeroSt,
             st.FinishRailwayDepotSt
         ]

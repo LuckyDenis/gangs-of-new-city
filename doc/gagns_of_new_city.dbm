@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2" last-position="0,0" last-zoom="1" max-obj-count="6"
+<dbmodel pgmodeler-ver="0.9.2" last-position="0,0" last-zoom="0.85" max-obj-count="7"
 	 default-schema="public" default-owner="postgres">
 <role name="denis"
       superuser="true">
@@ -18,7 +18,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="user" layer="0" collapse-mode="2" max-obj-count="10">
 	<schema name="public"/>
 	<role name="denis"/>
-	<position x="180" y="120"/>
+	<position x="80" y="40"/>
 	<column name="id" not-null="true">
 		<type name="bigint" length="0"/>
 	</column>
@@ -71,10 +71,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="hero" layer="0" collapse-mode="2" max-obj-count="4">
+<table name="hero" layer="0" collapse-mode="2" max-obj-count="16">
 	<schema name="public"/>
 	<role name="denis"/>
-	<position x="540" y="320"/>
+	<position x="440" y="220"/>
 	<column name="user" not-null="true">
 		<type name="bigint" length="0"/>
 	</column>
@@ -86,6 +86,36 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 	<column name="gang">
 		<type name="varchar" length="10"/>
+	</column>
+	<column name="health" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="health_max" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="mana" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="mana_max" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="stamina" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="stamina_max" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="accuracy" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="strength" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="intellect" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="agility" not-null="true" default-value="100">
+		<type name="integer" length="0"/>
 	</column>
 	<constraint name="user_pk" type="pk-constr" table="public.hero">
 		<columns names="user" ref-type="src-columns"/>
@@ -148,6 +178,26 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<columns names="invited" ref-type="src-columns"/>
 	</constraint>
 </table>
+
+<table name="game_element" layer="0" collapse-mode="2" max-obj-count="1">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="940" y="240"/>
+	<column name="eid" not-null="true">
+		<type name="varchar" length="0"/>
+	</column>
+	<constraint name="game_element_pk" type="pk-constr" table="public.game_element">
+		<columns names="eid" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<index name="eid_idx" table="public.game_element"
+	 concurrent="true" unique="true" fast-update="false" buffering="false"
+	 index-type="btree" factor="0">
+		<idxelement use-sorting="false">
+			<column name="eid"/>
+		</idxelement>
+</index>
 
 <constraint name="language_fk" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="CASCADE" del-action="SET DEFAULT" ref-table="public.language" table="public.&quot;user&quot;">

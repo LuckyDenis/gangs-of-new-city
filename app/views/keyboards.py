@@ -62,3 +62,39 @@ class LanguagesKeyboard:
                 i_inn=ECmds.INN.mk()
             ))
         )
+
+
+class InnKeyboard:
+    @staticmethod
+    def get():
+        return ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_hero} Hero").format(
+                i_hero=ECmds.HERO.mk()
+            )),
+            KeyboardButton(_("{i_satchel} Satchel").format(
+                i_satchel=ECmds.SATCHEL.mk()
+            )),
+            KeyboardButton(_("{i_setup} Setup").format(
+                i_setup=ECmds.SETUP.mk()
+            ))
+        )
+
+
+class SelectInnKeyboard:
+    @staticmethod
+    def get():
+        return ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_salamander} Fire Salamander").format(
+                i_hero=ECmds.HERO.mk()
+            ))
+        ).row(
+            KeyboardButton(_("{i_salamander} Fire Salamander").format(
+                i_hero=ECmds.HERO.mk()
+            ))
+        )
