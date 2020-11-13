@@ -3,6 +3,7 @@
 from logging import getLogger
 
 from . import models as m
+from . import default as d
 
 logger = getLogger(__name__)
 
@@ -61,20 +62,45 @@ class User:
 
 
 class Hero:
-    model = None
+    model = m.Hero
     skip_keys = ["id"]
 
     @classmethod
     async def get(cls, query):
-        return {}
+        state = {
+            "id": query["id"]
+        }
+        result = await cls.model.get(state)
+        return {**result} if result else {}
 
     @classmethod
     async def create(cls, query):
+        states = {
+            "id": query["id"],
+            "nick": query["hero_nick"],
+            "gang": d.HERO.GANG,
+            "level": d.HERO.LEVEL,
+            "health": d.HERO.HEALTH,
+            "mana": d.HERO.MANA,
+            "stamina": d.HERO.STAMINA,
+            "max_health": d.HERO.MAX_HEALTH,
+            "max_mana": d.HERO.MAX_MANA,
+            "max_stamina": d.HERO.MAX_STAMINA,
+            "accuracy": d.HERO.ACCURACY,
+            "strength": d.HERO.STRENGTH,
+            "intellect": d.HERO.INTELLECT,
+            "agility": d.HERO.AGILITY
+        }
+        await cls.model.create(states)
         return query
 
     @classmethod
     async def get_by_nick(cls, query):
-        return query
+        state = {
+            "nick": query["hero_nick"]
+        }
+        result = await cls.model.get_by_nick(state)
+        return {**result} if result else {}
 
 
 class Referral:

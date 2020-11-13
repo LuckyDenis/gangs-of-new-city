@@ -169,3 +169,49 @@ class DoesUserHaveAgreeing(BaseMessage):
                      "{i_cmd_not_agree} Not to agree: {cmd_not_agree}"
                      ).format(**format_data)
         return emojize(template)
+
+
+class ViewInnFireSalamander(BaseMessage):
+    @staticmethod
+    def get_template(state=None):
+
+        template = _(":woman_genie: [<b>Aladdin</b>]"
+                     "Silent night...")
+
+        return emojize(template)
+
+
+class ViewInnFluffyPaws(BaseMessage):
+    @staticmethod
+    def get_template(state=None):
+        template = _(":smile_cat: [<b>Mr. John Wick</b>]"
+                     "Silent night...")
+
+        return emojize(template)
+
+
+class ViewInnDancingHorse(BaseMessage):
+    @staticmethod
+    def get_template(state=None):
+        template = _(":woman_fairy: [<b>Lady Jen</b>]"
+                     "Silent night...")
+
+        return emojize(template)
+
+
+class ViewInnMoonRoad(BaseMessage):
+    @staticmethod
+    def get_template(state=None):
+        template = _(":man_vampire: [<b>Lady Jen</b>]"
+                     "Silent night...")
+
+        return emojize(template)
+
+
+class ViewSelectInn(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]"
+                     "Silent night...")
+
+        return emojize(template)

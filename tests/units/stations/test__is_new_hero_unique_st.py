@@ -37,7 +37,7 @@ async def test__traveled_with_error(up_train, monkeypatch):
         IsNewHeroUniqueSt, "execution", fake_execution_with_error)
     status = await IsNewHeroUniqueSt(train).traveled()
 
-    assert isinstance(train.states['is_hero'], dict)
+    assert isinstance(train.states['is_nick_busy'], dict)
     assert status is Code.EMERGENCY_STOP
 
 

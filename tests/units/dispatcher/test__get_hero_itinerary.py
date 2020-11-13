@@ -11,8 +11,8 @@ STATIONS = [
     st.GetUserSt,
     st.IsThereUserSt,
     st.IsUserBlockedSt,
-    st.GetHeroSt,
     st.IsThereHeroSt,
+    st.GetHeroSt,
     st.ViewHeroSt,
     st.FinishRailwayDepotSt
 ]

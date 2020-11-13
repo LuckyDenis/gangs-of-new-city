@@ -555,7 +555,7 @@ class IsNewHeroUniqueSt(BaseSt):
         self.train.answers = "не уникальное имя персонажа"
 
     def query_data(self):
-        query_name = "check_hero_unique"
+        query_name = "is_nick_unique"
         self.train.queries[query_name] = {
             "hero_nick": self.train.data["hero_nick"]
         }
@@ -566,15 +566,15 @@ class IsNewHeroUniqueSt(BaseSt):
         return db.Hero.get_by_nick
 
     async def _traveled(self):
-        is_hero = await self.execution(
+        is_nick_busy = await self.execution(
             self.storage_query(), self.query_data()
         )
-        self.train.states["is_hero"] = is_hero
+        self.train.states["is_nick_busy"] = is_nick_busy
 
         if self.exception:
             return Code.EMERGENCY_STOP
 
-        if is_hero:
+        if is_nick_busy:
             await self.add_out_answers()
             return Code.EMERGENCY_STOP
 
@@ -703,8 +703,8 @@ class IsThereHeroSt(BaseSt):
         self.train.answers = "Создайте героя"
 
     async def _traveled(self):
-        hero = self.train.states["hero"]
-        if not hero:
+        is_hero = self.train.states["user"]["is_hero"]
+        if not is_hero:
             await self.add_out_answers()
             return Code.EMERGENCY_STOP
 

@@ -2,7 +2,7 @@
 
 """
 export CONFIG=path...
-alembic revision -m "commit`s message" --autogenerate --head head
+alembic revision -m "commit message" --autogenerate --head head
 alembic upgrade head
 """
 

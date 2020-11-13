@@ -157,3 +157,58 @@ class DoesUserHaveAgreeing(BaseAnswer):
             "text": t.DoesUserHaveAgreeing.get_template(),
             "keyboard": k.StartKeyboard.get()
         }
+
+
+class ViewInnFireSalamander(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.ViewInnFireSalamander.get_template(),
+            "keyboard": k.InnKeyboard.get()
+        }
+
+
+class ViewInnFluffyPaws(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.ViewInnFluffyPaws.get_template(),
+            "keyboard": k.InnKeyboard.get()
+        }
+
+
+class ViewInnDancingHorse(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.ViewInnDancingHorse.get_template(),
+            "keyboard": k.InnKeyboard.get()
+        }
+
+
+class ViewInnMoonRoad(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.ViewInnMoonRoad.get_template(),
+            "keyboard": k.InnKeyboard.get()
+        }
+
+
+class ViewSelectInn(BaseAnswer):
+    @classmethod
+    async def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.ViewSelectInn.get_template(),
+            "keyboard": k.InnKeyboard.get()
+        }

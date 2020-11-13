@@ -1,8 +1,8 @@
-"""first migration
+"""commit message
 
-Revision ID: 7bc9e351f444
+Revision ID: 373c03803ec9
 Revises: 
-Create Date: 2020-11-11 14:53:16.833524
+Create Date: 2020-11-13 14:44:07.261661
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ from migrate import preset
 
 
 # revision identifiers, used by Alembic.
-revision = '7bc9e351f444'
+revision = '373c03803ec9'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -47,9 +47,23 @@ def upgrade():
     op.create_table('hero',
     sa.Column('user', sa.BigInteger(), nullable=False),
     sa.Column('nick', sa.String(length=20), nullable=True),
+    sa.Column('gang', sa.String(length=10), nullable=True),
+    sa.Column('level', sa.Integer(), nullable=False),
+    sa.Column('health', sa.Integer(), nullable=False),
+    sa.Column('mana', sa.Integer(), nullable=False),
+    sa.Column('stamina', sa.Integer(), nullable=False),
+    sa.Column('max_health', sa.Integer(), nullable=False),
+    sa.Column('max_mana', sa.Integer(), nullable=False),
+    sa.Column('max_stamina', sa.Integer(), nullable=False),
+    sa.Column('accuracy', sa.Integer(), nullable=False),
+    sa.Column('strength', sa.Integer(), nullable=False),
+    sa.Column('intellect', sa.Integer(), nullable=False),
+    sa.Column('agility', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['gang'], ['gang.color'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user'], ['user.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('user')
     )
+    op.create_index(op.f('ix_hero_gang'), 'hero', ['gang'], unique=False)
     op.create_index(op.f('ix_hero_nick'), 'hero', ['nick'], unique=True)
     op.create_index(op.f('ix_hero_user'), 'hero', ['user'], unique=False)
     op.create_table('referral',
@@ -59,10 +73,9 @@ def upgrade():
     sa.ForeignKeyConstraint(['invited'], ['user.id'], onupdate='CASCADE', ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['inviter'], ['user.id'], onupdate='CASCADE', ondelete='CASCADE')
     )
-    # ### end Alembic commands ###
 
-    # ### добавляем необходимые данные ###
     preset.data_001.update_data(op)
+    # ### end Alembic commands ###
 
 
 def downgrade():
@@ -70,6 +83,7 @@ def downgrade():
     op.drop_table('referral')
     op.drop_index(op.f('ix_hero_user'), table_name='hero')
     op.drop_index(op.f('ix_hero_nick'), table_name='hero')
+    op.drop_index(op.f('ix_hero_gang'), table_name='hero')
     op.drop_table('hero')
     op.drop_index(op.f('ix_user_id'), table_name='user')
     op.drop_table('user')
