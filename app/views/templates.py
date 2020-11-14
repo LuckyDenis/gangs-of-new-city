@@ -15,28 +15,6 @@ class BaseMessage:
         raise NotImplementedError()
 
 
-class StartMessage(BaseMessage):
-    @staticmethod
-    def get_template(states=None):
-        format_data = {
-            "cmd_not_agree": Cmds.ANO.mk(),
-            "cmd_agree": Cmds.AYES.mk(),
-            "i_cmd_agree": ECmds.WHITE_CHECK_MARK.mk(),
-            "i_cmd_not_agree": ECmds.WARNING.mk(),
-        }
-
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
-                     "To get to the city, you need to register."
-                     "Read these documents first. This is a privacy "
-                     "policy and a license agreement. To continue, "
-                     "send a command indicating consent.\n\n"
-                     "{i_cmd_agree} To agree: {cmd_agree}\n"
-                     "{i_cmd_not_agree} Not to agree: {cmd_not_agree}"
-                     ).format(**format_data)
-
-        return emojize(template)
-
-
 class SystemException(BaseMessage):
     @staticmethod
     def get_template(states=None):
@@ -60,48 +38,106 @@ class SystemException(BaseMessage):
         return emojize(template)
 
 
-class UserIsNotAgree(BaseMessage):
+class NewUser(BaseMessage):
     @staticmethod
     def get_template(states=None):
         format_data = {
-            "cmd_not_agree": Cmds.ANO.mk(),
-            "cmd_agree": Cmds.AYES.mk(),
-            "i_cmd_agree": ECmds.WHITE_CHECK_MARK.mk(),
-            "i_cmd_not_agree": ECmds.WARNING.mk(),
+            "cmd_accept": Cmds.FACCEPT.mk(),
+            "cmd_not_accept": Cmds.FNOTACCEPT.mk(),
+            "i_cmd_accept": ECmds.FACCEPT.mk(),
+            "i_cmd_not_accept": ECmds.FNOTACCEPT.mk(),
+        }
+
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+                     "To get to the city, you need to register."
+                     "Read these documents first. This is a privacy "
+                     "policy and a license agreement. To continue, "
+                     "send a command indicating consent.\n\n"
+                     "{i_cmd_accept} To accept: {cmd_accept}\n"
+                     "{i_cmd_not_accept} Not to accept: {cmd_not_accept}"
+                     ).format(**format_data)
+
+        return emojize(template)
+
+
+class UserIsReturn(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_inn": Cmds.INN.mk(),
+            "i_cmd_inn": ECmds.INN.mk()
+        }
+
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+                     "To get to the city, you need to register... "
+                     "Wait, I know you! It seems that with your "
+                     "return, we will have to increase patrols "
+                     "on the streets.\n\n"
+                     "Go to {i_cmd_inn} {cmd_inn}").format(**format_data)
+        return emojize(template)
+
+
+class NewUserIsNotAccept(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_accept": Cmds.FACCEPT.mk(),
+            "i_cmd_accept": ECmds.FACCEPT.mk()
         }
 
         template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
                      "Unfortunately, I cannot allow you to enter "
                      "the city until you have read and accepted the "
                      "license agreement and privacy policy.\n\n"
-                     "{i_cmd_agree} To agree: {cmd_agree}\n"
-                     "{i_cmd_not_agree} Not to agree: {cmd_not_agree}"
+                     "{i_cmd_accept} To accept: {cmd_accept}\n"
                      ).format(**format_data)
         return emojize(template)
 
 
-class UserIsAgree(BaseMessage):
+class NewUserIsAccept(BaseMessage):
     @staticmethod
     def get_template(states=None):
         format_data = {
-            "cmd_name": Cmds.HNAME.mk(),
+            "cmd_fru": Cmds.FRU.mk(),
+            "cmd_fen": Cmds.FEN.mk(),
+            "i_cmd_en": ECmds.EN.mk(),
+            "i_cmd_ru": ECmds.RU.mk()
         }
 
         template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
-                     "Great! Now tell me your name. "
-                     "To do this, send {cmd_name} NickName."
+                     "Specify your preferred language.\n\n"
+                     "{i_cmd_en} English: {cmd_fen}\n"
+                     "{i_cmd_ru} Russian: {cmd_fru}"
                      ).format(**format_data)
         return emojize(template)
 
 
-class UserIsAgreeHint(BaseMessage):
+class CreateNewHeroHint(BaseMessage):
     @staticmethod
     def get_template(states=None):
         template = _(":interrobang: [ <b> Hint </b>]\n"
                      "Choose your name carefully. "
-                     "It will be difficult to change your name in the future. "
-                     "The name must be unique and must "
-                     "not be longer than 20 characters.")
+                     "The hero's name can contain uppercase or "
+                     "lowercase Latin letters, decimal digits, "
+                     "a period, and underscores. The hero's name "
+                     "must be between 5 and 20 characters long "
+                     "and unique."
+                     )
+
+        return emojize(template)
+
+
+class CreateNewHero(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_name": Cmds.HNAME.mk()
+        }
+
+        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+                     "Great! Now tell me your name. To do "
+                     "this, send {cmd_name} NickName."
+                     ).format(**format_data)
 
         return emojize(template)
 
@@ -150,14 +186,12 @@ class ViewLanguages(BaseMessage):
         return emojize(template)
 
 
-class DoesUserHaveAgreeing(BaseMessage):
+class UserRejectPolicy(BaseMessage):
     @staticmethod
     def get_template(states=None):
         format_data = {
-            "cmd_not_agree": Cmds.ANO.mk(),
-            "cmd_agree": Cmds.AYES.mk(),
-            "i_cmd_agree": ECmds.WHITE_CHECK_MARK.mk(),
-            "i_cmd_not_agree": ECmds.WARNING.mk(),
+            "cmd_accept": Cmds.SACCEPT.mk(),
+            "i_cmd_accept": ECmds.SACCEPT.mk()
         }
 
         template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
@@ -165,8 +199,7 @@ class DoesUserHaveAgreeing(BaseMessage):
                      "may have been changed, or you did not "
                      "give your consent. Please read these "
                      "documents carefully.\n\n"
-                     "{i_cmd_agree} To agree: {cmd_agree}\n"
-                     "{i_cmd_not_agree} Not to agree: {cmd_not_agree}"
+                     "{i_cmd_accept} To agree: {cmd_accept}\n"
                      ).format(**format_data)
         return emojize(template)
 
@@ -175,7 +208,7 @@ class ViewInnFireSalamander(BaseMessage):
     @staticmethod
     def get_template(state=None):
 
-        template = _(":woman_genie: [<b>Aladdin</b>]"
+        template = _(":woman_genie: [<b>Jasmin</b>]"
                      "Silent night...")
 
         return emojize(template)
@@ -202,7 +235,7 @@ class ViewInnDancingHorse(BaseMessage):
 class ViewInnMoonRoad(BaseMessage):
     @staticmethod
     def get_template(state=None):
-        template = _(":man_vampire: [<b>Lady Jen</b>]"
+        template = _(":man_vampire: [<b>Sunny</b>]"
                      "Silent night...")
 
         return emojize(template)

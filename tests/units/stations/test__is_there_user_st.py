@@ -19,7 +19,7 @@ USER_KEY = 'user'
 @pytest.mark.stations
 async def test__traveled_user_is_there(train):
     train.states[USER_KEY] = USER
-    status = await IsThereUserSt(train).traveled()
+    status = await IsThereUserSt.traveled(train)
 
     assert status is Code.IS_OK
 
@@ -29,7 +29,7 @@ async def test__traveled_user_is_there(train):
 @pytest.mark.stations
 async def test__traveled_inviter_not_is_there(train):
     train.states[USER_KEY] = VOID_USER
-    status = await IsThereUserSt(train).traveled()
+    status = await IsThereUserSt.traveled(train)
 
     assert status is Code.EMERGENCY_STOP
 

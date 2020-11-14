@@ -29,6 +29,13 @@ class Commands(Enum):
     HERO = auto()
     SATCHEL = auto()
 
+    FACCEPT = auto()
+    FNOTACCEPT = auto()
+    SACCEPT = auto()
+
+    FRU = auto()
+    FEN = auto()
+
     INTO_FS = auto()
     INTO_FP = auto()
     INTO_DH = auto()
@@ -47,6 +54,11 @@ class EmojizeCommands(Enum):
     SETUP = _T.format("gear")
     HERO = _T.format("bust_in_silhouette")
     SATCHEL = _T.format("school_backpack")
+
+    FACCEPT = _T.format("white_check_mark")
+    FNOTACCEPT = _T.format("ballot_box_with_check")
+
+    SACCEPT = _T.format("radio_button")
 
     INTO_FS = _T.format("")
     INTO_FP = _T.format("")

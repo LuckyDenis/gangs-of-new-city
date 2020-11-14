@@ -48,37 +48,65 @@ async def cmd_start(message: t.Message, unique_id):
         "datetime": message.date,
         "referral_id": message.get_args() or False
     }
-    train = core.NewUserItinerary(data)
+    train = core.UserStartItinerary(data)
     await train.move()
     answers = train.get_answers()
     await done(answers)
 
 
-# ----- cmd: ano ----- #
-@dp.message_handler(regexp=ECmds.WARNING.get())
-@dp.message_handler(commands=Cmds.ANO.get())
+# ----- cmd: fnotaccept ----- #
+@dp.message_handler(regexp=ECmds.FNOTACCEPT.get())
+@dp.message_handler(commands=Cmds.FNOTACCEPT.get())
 async def cmd_ano(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
         "id": message.chat.id,
         "datetime": message.date,
     }
-    train = core.UserIsNotAgreeItinerary(data)
+    train = core.NewUserIsNotAcceptItinerary(data)
     await train.move()
     answers = train.get_answers()
     await done(answers)
 
 
-# ----- cmd: ayes ----- #
-@dp.message_handler(regexp=ECmds.WHITE_CHECK_MARK.get())
-@dp.message_handler(commands=Cmds.AYES.get())
+# ----- cmd: faccept ----- #
+@dp.message_handler(regexp=ECmds.FACCEPT.get())
+@dp.message_handler(commands=Cmds.FACCEPT.get())
 async def cmd_ayes(message: t.Message, unique_id):
     data = {
         "unique_id": unique_id,
         "id": message.chat.id,
         "datetime": message.date,
     }
-    train = core.UserIsAgreeItinerary(data)
+    train = core.NewUserIsAcceptItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- cmd: fen ----- #
+@dp.message_handler(commands=Cmds.FEN.get())
+async def cmd_ayes(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date,
+    }
+    train = core.NewUserPickEnLanguageItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
+# ----- cmd: fru ----- #
+@dp.message_handler(commands=Cmds.FRU.get())
+async def cmd_ayes(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date,
+    }
+    train = core.NewUserPickRuLanguageItinerary(data)
     await train.move()
     answers = train.get_answers()
     await done(answers)

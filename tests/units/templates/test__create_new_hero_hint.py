@@ -11,7 +11,7 @@ from tests.helpers.fake_i18n import I18N
 @pytest.mark.dispatcher
 def test__get_template(monkeypatch):
     monkeypatch.setattr(t, "I18N", I18N)
-    text = t.StartMessage.get_template()
+    text = t.NewUserIsAccept.get_template()
 
     assert isinstance(text, str)
 
@@ -20,13 +20,11 @@ def test__get_template(monkeypatch):
 @pytest.mark.core
 @pytest.mark.dispatcher
 @pytest.mark.parametrize("cmd", [
-    Cmds.ANO.mk(),
-    Cmds.AYES.mk(),
-    ECmds.WHITE_CHECK_MARK.mk(),
-    ECmds.WARNING.mk()
+    Cmds.FACCEPT.mk(),
+    ECmds.FACCEPT.mk()
 ])
 def test__checking_cmds(monkeypatch, cmd):
     monkeypatch.setattr(t, "I18N", I18N)
-    text = t.StartMessage.get_template()
+    text = t.NewUserIsNotAccept.get_template()
 
     assert text.find(cmd) != -1

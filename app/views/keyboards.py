@@ -30,18 +30,54 @@ class SystemException:
         )
 
 
-class StartKeyboard:
+class NewUserKeyboard:
     @staticmethod
     def get():
         return ReplyKeyboardMarkup(
             resize_keyboard=True,
             one_time_keyboard=False
         ).row(
-            KeyboardButton(_("{i_agree} To agree").format(
-                i_agree=ECmds.WHITE_CHECK_MARK.mk())),
-            KeyboardButton(_("{i_not_agree} Not to agree").format(
-                i_not_agree=ECmds.WARNING.mk()
+            KeyboardButton(_("{i_accept} Accept").format(
+                i_accept=ECmds.FACCEPT.mk())),
+            KeyboardButton(_("{i_not_accept} Not accept").format(
+                i_not_accept=ECmds.FNOTACCEPT.mk()
             ))
+        )
+
+
+class UserIsReturnKeyboard:
+    @staticmethod
+    def get():
+        return ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_inn} Inn").format(
+                i_inn=ECmds.INN.mk()))
+        )
+
+
+class NewUserIsNotAcceptKeyboard:
+    @staticmethod
+    def get():
+        return ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_accept} Accept").format(
+                i_accept=ECmds.FACCEPT.mk()))
+        )
+
+
+class UserRejectPolicyKeyboard:
+    @staticmethod
+    def get():
+        return ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_accept} Accept").format(
+                i_accept=ECmds.SACCEPT.mk()))
         )
 
 

@@ -23,7 +23,7 @@ USER_KEY = 'user'
 @pytest.mark.stations
 async def test__traveled_user_is_not_blocked(train):
     train.states[USER_KEY] = USER_IS_NOT_BLOCKED
-    status = await IsUserBlockedSt(train).traveled()
+    status = await IsUserBlockedSt.traveled(train)
 
     assert status == Code.IS_OK
 
@@ -33,7 +33,7 @@ async def test__traveled_user_is_not_blocked(train):
 @pytest.mark.stations
 async def test__traveled_user_is_blocked(train):
     train.states[USER_KEY] = USER_IS_BLOCKED
-    status = await IsUserBlockedSt(train).traveled()
+    status = await IsUserBlockedSt.traveled(train)
 
     assert status is Code.EMERGENCY_STOP
 

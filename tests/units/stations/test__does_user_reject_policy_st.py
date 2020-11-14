@@ -1,17 +1,14 @@
 # coding: utf8
 import pytest
 
-from app.core.stations import UserIsAgreeHintSt
+from app.core.stations import DoesUserRejectPolicySt
 from app.database.fixture import Languages
 from app.core.statuses import Statuses as Code
 
 
 @pytest.fixture()
 def up_train(train):
-    train.states["user"] = {
-        "language": Languages.RUSSIAN,
-        "is_hint": True
-    }
+    train.states["user"] = {"language": Languages.RUSSIAN}
     return train
 
 
@@ -19,19 +16,19 @@ def up_train(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(up_train):
-    train = up_train
-    status = await UserIsAgreeHintSt(train).traveled()
+    up_train.states["user"]["is_accepted"] = True
+    status = await DoesUserRejectPolicySt.traveled(up_train)
     assert status is Code.IS_OK
 
 
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__traveled_switch_off(up_train):
-    train = up_train
-    train.states["user"]["is_hint"] = False
-    status = await UserIsAgreeHintSt(train).traveled()
-    assert status is Code.IS_OK
+async def test__traveled_not_has_agreeing(up_train):
+    up_train.states["user"]["has_agreeing"] = False
+    status = await DoesUserRejectPolicySt.traveled(up_train)
+
+    assert status is Code.EMERGENCY_STOP
 
 
 @pytest.mark.skip("Требуется `views.answers`.")

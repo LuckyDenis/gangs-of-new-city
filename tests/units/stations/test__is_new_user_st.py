@@ -21,7 +21,7 @@ USER_KEY = 'user'
 @pytest.mark.stations
 async def test__traveled_user_is_there(train):
     train.states[USER_KEY] = USER_IS_NO_NEW
-    status = await IsNewUserSt(train).traveled()
+    status = await IsNewUserSt.traveled(train)
     assert status is Code.EMERGENCY_STOP
 
 
@@ -30,7 +30,7 @@ async def test__traveled_user_is_there(train):
 @pytest.mark.stations
 async def test__traveled_user_not_is_there(train):
     train.states[USER_KEY] = USER_IS_NEW
-    status = await IsNewUserSt(train).traveled()
+    status = await IsNewUserSt.traveled(train)
 
     assert status is Code.IS_OK
 

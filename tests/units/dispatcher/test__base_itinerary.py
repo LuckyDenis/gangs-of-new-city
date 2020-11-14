@@ -9,21 +9,24 @@ ANSWER = "answer test"
 
 
 class ASt(BaseSt):
-    async def traveled(self):
-        self.train.states["A"] = True
+    @classmethod
+    async def traveled(cls, train):
+        train.states["A"] = True
         return Code.IS_OK
 
 
 class BSt(BaseSt):
-    async def traveled(self):
-        self.train.states["B"] = True
+    @classmethod
+    async def traveled(cls, train):
+        train.states["B"] = True
         return Code.EMERGENCY_STOP
 
 
 class CSt(BaseSt):
-    async def traveled(self):
-        self.train.states["C"] = True
-        self.train.answers = ANSWER
+    @classmethod
+    async def traveled(cls, train):
+        train.states["C"] = True
+        train.answers = ANSWER
         return Code.IS_OK
 
 

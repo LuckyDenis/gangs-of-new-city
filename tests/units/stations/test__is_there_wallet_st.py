@@ -20,7 +20,7 @@ WALLET_KEY = 'wallet'
 @pytest.mark.stations
 async def test__traveled_wallet_is_there(train):
     train.states[WALLET_KEY] = WALLET
-    status = await IsThereWalletSt(train).traveled()
+    status = await IsThereWalletSt.traveled(train)
 
     assert status is Code.IS_OK
 
@@ -30,7 +30,7 @@ async def test__traveled_wallet_is_there(train):
 @pytest.mark.stations
 async def test__traveled_wallet_is_not_there(train):
     train.states[WALLET_KEY] = EMPTY_WALLET
-    status = await IsThereWalletSt(train).traveled()
+    status = await IsThereWalletSt.traveled(train)
 
     assert status is Code.EMERGENCY_STOP
 

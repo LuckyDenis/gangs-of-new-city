@@ -26,7 +26,7 @@ async def test__hero_nick_is_not_correct(data, hero_nick):
     dt.update(data)
     train = Train(dt)
     train.states["user"] = USER
-    status = await IsCorrectHeroNickSt(train).traveled()
+    status = await IsCorrectHeroNickSt.traveled(train)
     assert status == Code.EMERGENCY_STOP
 
 
@@ -45,5 +45,5 @@ async def test__hero_nick_is_correct(data, hero_nick):
     dt.update(data)
     train = Train(dt)
     train.states["user"] = USER
-    status = await IsCorrectHeroNickSt(train).traveled()
+    status = await IsCorrectHeroNickSt.traveled(train)
     assert status == Code.IS_OK

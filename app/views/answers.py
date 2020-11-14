@@ -14,12 +14,12 @@ i18n = I18N()
 
 class BaseAnswer:
     @classmethod
-    async def get(cls, state):
+    def get(cls, state):
         i18n.set_locale(state["language"])
-        return await cls._get(state)
+        return cls._get(state)
 
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         raise NotImplementedError()
 
 
@@ -33,11 +33,11 @@ class SystemException(BaseAnswer):
     обезательно нужно отдать ответ.
     """
     @classmethod
-    async def get(cls, state):
-        return await cls._get(state)
+    def get(cls, state):
+        return cls._get(state)
 
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -57,11 +57,11 @@ class UserIsNotFound(BaseAnswer):
     нужно отдать хоть какой-то ответ.
     """
     @classmethod
-    async def get(cls, state):
-        return await cls._get(state)
+    def get(cls, state):
+        return cls._get(state)
 
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -71,75 +71,62 @@ class UserIsNotFound(BaseAnswer):
 
 class NewUser(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
-        keyboard = k.StartKeyboard.get()
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.StartMessage.get_template(),
-            "keyboard": keyboard
+            "text": t.NewUser.get_template(),
+            "keyboard": k.NewUserKeyboard.get()
         }
 
 
-class UserIsNotAgree(BaseAnswer):
+class NewUserIsNotAccept(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
-        keyboard = k.StartKeyboard.get()
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsNotAgree.get_template(),
-            "keyboard": keyboard
+            "text": t.NewUserIsNotAccept.get_template(),
+            "keyboard": k.NewUserIsNotAcceptKeyboard.get()
         }
 
 
-class UserIsAgree(BaseAnswer):
+class NewUserIsAccept(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
-        keyboard = k.Remove.get()
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsAgree.get_template(),
-            "keyboard": keyboard
+            "text": t.NewUserIsAccept.get_template(),
+            "keyboard": k.Remove.get()
         }
 
 
-class UserIsAgreeHint(BaseAnswer):
+class UserIsReturn(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
-        keyboard = k.Remove.get()
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsAgreeHint.get_template(),
-            "keyboard": keyboard
+            "text": t.UserIsReturn,
+            "keyboard": k.UserIsReturnKeyboard
         }
 
 
-class UserIsNotNew(BaseAnswer):
+class UserRejectPolicy(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": "нашли пользователя"
-        }
-
-
-class HeroNickIsNotCorrect(BaseAnswer):
-    @classmethod
-    async def _get(cls, state):
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": t.HeroNickIsNotCorrect.get_template()
+            "text": t.UserRejectPolicy.get_template(),
+            "keyboard": k.UserRejectPolicyKeyboard.get()
         }
 
 
 class ViewLanguages(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -148,20 +135,41 @@ class ViewLanguages(BaseAnswer):
         }
 
 
-class DoesUserHaveAgreeing(BaseAnswer):
+class HeroNickIsNotCorrect(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.DoesUserHaveAgreeing.get_template(),
-            "keyboard": k.StartKeyboard.get()
+            "text": t.HeroNickIsNotCorrect.get_template()
+        }
+
+
+class CreateNewHeroHint(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.CreateNewHeroHint.get_template()
+        }
+
+
+class CreateNewHero(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        keyboard = k.Remove.get()
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.CreateNewHero.get_template(),
+            "keyboard": keyboard
         }
 
 
 class ViewInnFireSalamander(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -172,7 +180,7 @@ class ViewInnFireSalamander(BaseAnswer):
 
 class ViewInnFluffyPaws(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -183,7 +191,7 @@ class ViewInnFluffyPaws(BaseAnswer):
 
 class ViewInnDancingHorse(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -194,7 +202,7 @@ class ViewInnDancingHorse(BaseAnswer):
 
 class ViewInnMoonRoad(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
@@ -205,7 +213,7 @@ class ViewInnMoonRoad(BaseAnswer):
 
 class ViewSelectInn(BaseAnswer):
     @classmethod
-    async def _get(cls, state):
+    def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,

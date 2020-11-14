@@ -24,38 +24,8 @@ logger = getLogger("stations")
 
 
 class BaseSt:
-    def __init__(self, train):
-        self.train = train
-        train.progress = {
-            "name": self._station_name(),
-            "status": True
-        }
-        logger.debug(self.train.payload)
-
-    def _station_name(self):
-        return self.__class__.__name__
-
-    @property
-    def exception(self):
-        return self.train.exception
-
-    @exception.setter
-    def exception(self, err):
-        self.train.exception = err
-
-    @property
-    def answers(self):
-        return self.train.answers
-
-    @answers.setter
-    def answers(self, answer):
-        self.train.answers = answer
-
-    @answers.deleter
-    def answers(self):
-        del self.train.answers
-
-    async def add_exception_answer(self):
+    @classmethod
+    def add_exception_answer(cls, train):
         """
         Если в ходе выполнения запроса к базе мы получили ошибку,
         то все полученные до этого ответы в `train.answers` будут
@@ -63,41 +33,53 @@ class BaseSt:
         `BaseSt._traveled` нужно сделать проверку на ошибку явно.
         """
 
-        del self.train.answers
+        del train.answers
         state = {
-            "id": self.train.data["id"],
-            "unique_id": self.train.data["unique_id"]
+            "id": train.data["id"],
+            "unique_id": train.data["unique_id"]
         }
-        self.answers = await an.SystemException.get(state)
+        train.answers = an.SystemException.get(state)
 
-    async def traveled(self):
+    @classmethod
+    def mark_checkpoint(cls, train):
+        train.progress = {
+            "name": cls.__name__,
+            "status": True
+        }
+        logger.debug(train.payload)
+
+    @classmethod
+    async def traveled(cls, train):
         """
         Работу с ошибками проводим тут, для инкапсуляции логики
         в одном месте и оставить чистой логику других объектов.
         :return: Bool
         """
-
+        cls.mark_checkpoint(train)
         is_ok = False
         try:
-            is_ok = await self._traveled()
+            is_ok = await cls._traveled(train)
         except KeyError:
-            await self.add_exception_answer()
+            cls.add_exception_answer(train)
         return is_ok
 
-    async def _traveled(self):
+    @classmethod
+    async def _traveled(cls, train):
         """
         Тут в поражденных станция пишем логику работы.
         :return: Bool
         """
         raise NotImplementedError
 
-    async def execution(self, storage_query, query_name):
+    @classmethod
+    async def execution(cls, train, storage_query, query_name):
         """
         Передаем в эту функцию парамметры, а не вызываем
         абстрактные методы, для сохранения гибкости классов.
         Возможна ситуация, когда нам потребуется в одном классе
         выполнить два запроса к базе данных.
 
+        :param train:
         :param storage_query: передаем функцию,
             которая при вызове выполнит запрос к базе данных
         :param query_name: имя запроса, по которому можно
@@ -108,10 +90,10 @@ class BaseSt:
         result = {}
         try:
             result = await storage_query(
-                self.train.queries[query_name])
+                train.queries[query_name])
         except Exception as e:
-            self.exception = {"args": e.args, "traceback": e.__traceback__}
-            await self.add_exception_answer()
+            train.exception = {"args": e.args, "traceback": e.__traceback__}
+            cls.add_exception_answer(train)
 
         return result
 
@@ -126,7 +108,8 @@ class StartRailwayDepotSt(BaseSt):
     todo:
     В этот класс можно встроить старт метрики `timeit`.
     """
-    async def _traveled(self):
+    @classmethod
+    async def _traveled(cls, train):
         return Code.IS_OK
 
 
@@ -136,7 +119,8 @@ class FinishRailwayDepotSt(BaseSt):
     todo:
     В этот класс можно встроить финиш метрики `timeit`.
     """
-    async def _traveled(self):
+    @classmethod
+    async def _traveled(cls, train):
         return Code.IS_OK
 
 
@@ -148,10 +132,11 @@ class GetUserSt(BaseSt):
     Обязательные данные: ['data']['id']
     Добавленные данные: ['states']['user']
     """
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "get_user"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"]
+        train.queries[query_name] = {
+            "id": train.data["id"]
         }
         return query_name
 
@@ -159,35 +144,38 @@ class GetUserSt(BaseSt):
     def storage_query():
         return db.User.get
 
-    async def _traveled(self):
-        user = await self.execution(
-            self.storage_query(), self.query_data())
-        self.train.states["user"] = user
+    @classmethod
+    async def _traveled(cls, train):
+        user = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train))
+        train.states["user"] = user
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
 
 
 class UserTimeVisitedUpdateSt(BaseSt):
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "user_time_visited_update"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"],
-            "visited": self.train.data["datetime"]
+        train.queries[query_name] = {
+            "id": train.data["id"],
+            "visited": train.data["datetime"]
         }
         return query_name
 
     @staticmethod
     def storage_query():
-        return db.User.user_time_visited_update
+        return db.User.time_visited_update
 
-    async def _traveled(self):
-        await self.execution(
-            self.storage_query(), self.query_data())
+    @classmethod
+    async def _traveled(cls, train):
+        await cls.execution(
+            train, cls.storage_query(), cls.query_data(train))
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -204,17 +192,19 @@ class IsNewUserSt(BaseSt):
     Обязательные данные: ['states']['user']
     Добавленные данные: ['answers']['answer'] или None
     """
-    async def add_out_answer(self):
+    @classmethod
+    def add_out_answer(cls, train):
         state = {
-            "id": self.train.data["id"],
-            "language": self.train.data["language"]
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
         }
-        self.answers = await an.UserIsNotNew.get(state)
+        train.answers = an.UserIsReturn.get(state)
 
-    async def _traveled(self):
-        user = self.train.states['user']
+    @classmethod
+    async def _traveled(cls, train):
+        user = train.states['user']
         if user:  # Пользователь существует
-            await self.add_out_answer()
+            cls.add_out_answer(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -231,21 +221,23 @@ class UserCreateSt(BaseSt):
         ['data']['datetime']
     Добавленные данные: ['states']['user']
     """
-    async def add_out_answer(self):
+    @classmethod
+    def add_out_answer(cls, train):
         state = {
-            "id": self.train.data["id"],
-            "language": self.train.data["language"]
+            "id": train.data["id"],
+            "language": train.data["language"]
         }
-        self.train.answers = await an.NewUser.get(state)
+        train.answers = an.NewUser.get(state)
 
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "create_user"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"],
-            "is_bot": self.train.data["is_bot"],
-            "language": self.train.data["language"],
-            "visited": self.train.data["datetime"],
-            "registered": self.train.data["datetime"],
+        train.queries[query_name] = {
+            "id": train.data["id"],
+            "is_bot": train.data["is_bot"],
+            "language": train.data["language"],
+            "visited": train.data["datetime"],
+            "registered": train.data["datetime"],
         }
         return query_name
 
@@ -253,15 +245,16 @@ class UserCreateSt(BaseSt):
     def storage_query():
         return db.User.create
 
-    async def _traveled(self):
-        user = await self.execution(
-            self.storage_query(), self.query_data())
-        self.train.states["user"] = user
+    @classmethod
+    async def _traveled(cls, train):
+        user = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train))
+        train.states["user"] = user
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
-        await self.add_out_answer()
+        cls.add_out_answer(train)
         return Code.IS_OK
 
 
@@ -277,8 +270,9 @@ class DoesUserHaveReferralIdSt(BaseSt):
     Обезателные данные: ['data']['referral_id']
     Дабавленные данные: None
     """
-    async def _traveled(self):
-        referral_id = self.train.data.get("referral_id")
+    @classmethod
+    async def _traveled(cls, train):
+        referral_id = train.data.get("referral_id")
         if not referral_id:
             return Code.EMERGENCY_STOP
 
@@ -296,10 +290,11 @@ class GetInviterSt(BaseSt):
     Обезательные данные: ['data']['referral_id']
     Добавленные данные: ['states']['inviter']
     """
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "get_inviter"
-        self.train.queries[query_name] = {
-            "id": self.train.data["referral_id"]
+        train.queries[query_name] = {
+            "id": train.data["referral_id"]
         }
         return query_name
 
@@ -307,12 +302,13 @@ class GetInviterSt(BaseSt):
     def storage_query():
         return db.User.get
 
-    async def _traveled(self):
-        inviter = await self.execution(
-            self.storage_query(), self.query_data())
-        self.train.states["inviter"] = inviter
+    @classmethod
+    async def _traveled(cls, train):
+        inviter = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train))
+        train.states["inviter"] = inviter
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -326,8 +322,9 @@ class IsThereInviterSt(BaseSt):
     Обезательные данные: ['states']['inviter']
     Добавленные данные: None
     """
-    async def _traveled(self):
-        inviter = self.train.states["inviter"]
+    @classmethod
+    async def _traveled(cls, train):
+        inviter = train.states["inviter"]
         if not inviter:
             return Code.EMERGENCY_STOP
 
@@ -346,9 +343,10 @@ class UserIsInviterSt(BaseSt):
     todo:
     Подумать, может ли возникнуть така ситуация.
     """
-    async def _traveled(self):
-        user = self.train.states['user']
-        inviter = self.train.states['inviter']
+    @classmethod
+    async def _traveled(cls, train):
+        user = train.states['user']
+        inviter = train.states['inviter']
         if user["id"] == inviter["id"]:
             return Code.EMERGENCY_STOP
 
@@ -365,14 +363,16 @@ class AddReferralDataSt(BaseSt):
         ['states']['inviter']['id']
     Добавленные данные: ['answers']['answer']
     """
-    async def add_out_answers(self):
-        self.train.answers = "сообщаем что дан боннус"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "сообщаем что дан боннус"
 
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "add_referral_data"
-        self.train.queries[query_name] = {
-            'invited': self.train.data["id"],
-            'inviter': self.train.states["inviter"]["id"]
+        train.queries[query_name] = {
+            'invited': train.data["id"],
+            'inviter': train.states["inviter"]["id"]
         }
         return query_name
 
@@ -380,15 +380,98 @@ class AddReferralDataSt(BaseSt):
     def storage_query():
         return db.Referral.create
 
-    async def _traveled(self):
-        await self.execution(
-            self.storage_query(), self.query_data()
+    @classmethod
+    async def _traveled(cls, train):
+        await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
         )
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
-        await self.add_out_answers()
+        cls.add_out_answers(train)
+        return Code.IS_OK
+
+
+class NewUserIsNotAcceptSt(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.NewUserIsNotAccept.get(state)
+
+    @classmethod
+    def query_data(cls, train):
+        query_name = "new_user_is_not_accept"
+        train.queries[query_name] = {
+            "id": train.data["id"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.User.is_not_accept_policy
+
+    @classmethod
+    async def _traveled(cls, train):
+        await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
+        )
+        if train.exception:
+            return Code.EMERGENCY_STOP
+
+        cls.add_out_answers(train)
+        return Code.IS_OK
+
+
+class NewUserIsAcceptSt(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.NewUserIsAccept.get(state)
+
+    @classmethod
+    def query_data(cls, train):
+        query_name = "new_user_is_accept"
+        train.queries[query_name] = {
+            "id": train.data["id"]
+        }
+        return query_name
+
+    @staticmethod
+    def storage_query():
+        return db.User.is_accept_policy
+
+    @classmethod
+    async def _traveled(cls, train):
+        await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
+        )
+
+        if train.exception:
+            return Code.EMERGENCY_STOP
+
+        cls.add_out_answers(train)
+        return Code.IS_OK
+
+
+class ViewLanguagesSt(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.ViewLanguages.get(state)
+
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
         return Code.IS_OK
 
 
@@ -403,16 +486,18 @@ class IsThereUserSt(BaseSt):
     Обязательные данные: ['states']['user']
     Добавленные данные: ['answers']['answer'] или None
     """
-    async def add_out_answer(self):
+    @classmethod
+    def add_out_answer(cls, train):
         state = {
-            "id": self.train.data["id"]
+            "id": train.data["id"]
         }
-        self.answers = await an.UserIsNotFound.get(state)
+        train.answers = an.UserIsNotFound.get(state)
 
-    async def _traveled(self):
-        user = self.train.states['user']
+    @classmethod
+    async def _traveled(cls, train):
+        user = train.states['user']
         if not user:  # Пользователь не существует
-            await self.add_out_answer()
+            cls.add_out_answer(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -426,113 +511,40 @@ class IsUserBlockedSt(BaseSt):
     Обязательные данные: ['states']['user']['is_blocked']
     Добавленные данные: ['answers']['answer'] или None
     """
-    async def add_out_answer(self):
-        self.answers = "Пользователь заблокирован"
+    @classmethod
+    def add_out_answer(cls, train):
+        train.answers = "Пользователь заблокирован"
 
-    async def _traveled(self):
-        user = self.train.states["user"]
+    @classmethod
+    async def _traveled(cls, train):
+        user = train.states["user"]
         if user and user["is_blocked"]:
-            await self.add_out_answer()
+            cls.add_out_answer(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
 
 
-class IsCorrectHeroNickSt(BaseSt):
-    """
-    Проверка имени героя на корректность.
-
-    Имя может содержать: a-z, A-Z, 0-9, точку,
-    нижнее подчеркивание.
-    """
-
-    async def add_out_answer(self):
-        state = {
-            "id": self.train.data["id"],
-            "language": self.train.states["user"]["language"]
-        }
-        self.answers = await an.HeroNickIsNotCorrect.get(state)
-
-    async def _traveled(self):
-        hero_nick = self.train.data["hero_nick"]
-
-        if not fullmatch(r"^[A-Za-z0-9_.]{5,20}$", hero_nick):
-            await self.add_out_answer()
-            return Code.EMERGENCY_STOP
-
-        return Code.IS_OK
-
-
-class GetHeroSt(BaseSt):
-    """
-    Получение героя персонажа.
-
-    Контракт:
-    Обезательные данные: ['data']['id']
-    Добавленные данные: ['states']['hero']
-    """
-    def query_data(self):
-        query_name = "get_hero"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"]
-        }
-        return query_name
-
-    @staticmethod
-    def storage_query():
-        return db.Hero.get
-
-    async def _traveled(self):
-        hero = await self.execution(
-            self.storage_query(), self.query_data()
-        )
-        self.train.states["hero"] = hero
-
-        if self.exception:
-            return Code.EMERGENCY_STOP
-
-        return Code.IS_OK
-
-
-class IsNewHeroSt(BaseSt):
-    """
-    Проверка на то, имеет ли пользователь уже героя.
-
-    Контракт:
-    Обезательные данные: ['states']['hero']
-    Добавленные данные: ['answers']['answer'] или None
-    """
-
-    async def add_out_answers(self):
-        self.train.answers = "у вас уже есть герой"
-
-    async def _traveled(self):
-        hero = self.train.states["user"]['is_hero']
-        if hero:
-            await self.add_out_answers()
-            return Code.EMERGENCY_STOP
-
-        return Code.IS_OK
-
-
-class DoesUserHaveAgreeingSt(BaseSt):
+class DoesUserRejectPolicySt(BaseSt):
     """
     Пользователь разрешил обработку персональных данных.
 
     Обезательные данные: ['states']['user']["is_agreeing']
     Добавленные данные: ['answers']['answer'] или None
     """
-    async def add_out_answer(self):
+    @classmethod
+    def add_out_answer(cls, train):
         state = {
-            "id": self.train.data["id"],
-            "language": self.train.states["user"]["language"]
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
         }
-        self.train.answers = await an.DoesUserHaveAgreeing.get(state)
+        train.answers = an.UserRejectPolicy.get(state)
 
-    async def _traveled(self):
-        is_agreeing = self.train.states["user"]["is_agreeing"]
-        if not is_agreeing:
-            await self.add_out_answer()
+    @classmethod
+    async def _traveled(cls, train):
+        is_accepted = train.states["user"]["is_accepted"]
+        if not is_accepted:
+            cls.add_out_answer(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -551,13 +563,15 @@ class IsNewHeroUniqueSt(BaseSt):
     Подумать: Надо разивать на два класса или это
     все таки одно логическое действие.
     """
-    async def add_out_answers(self):
-        self.train.answers = "не уникальное имя персонажа"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "не уникальное имя персонажа"
 
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "is_nick_unique"
-        self.train.queries[query_name] = {
-            "hero_nick": self.train.data["hero_nick"]
+        train.queries[query_name] = {
+            "hero_nick": train.data["hero_nick"]
         }
         return query_name
 
@@ -565,17 +579,18 @@ class IsNewHeroUniqueSt(BaseSt):
     def storage_query():
         return db.Hero.get_by_nick
 
-    async def _traveled(self):
-        is_nick_busy = await self.execution(
-            self.storage_query(), self.query_data()
+    @classmethod
+    async def _traveled(cls, train):
+        is_nick_busy = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
         )
-        self.train.states["is_nick_busy"] = is_nick_busy
+        train.states["is_nick_busy"] = is_nick_busy
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
         if is_nick_busy:
-            await self.add_out_answers()
+            cls.add_out_answers(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -593,14 +608,16 @@ class NewHeroCreateSt(BaseSt):
         ['states']['new_hero']
         ['answers']['answer']
     """
-    async def add_out_answers(self):
-        self.train.answers = "создан новый герой"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "создан новый герой"
 
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "create_new_hero"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"],
-            "hero_nick": self.train.data["hero_nick"]
+        train.queries[query_name] = {
+            "id": train.data["id"],
+            "hero_nick": train.data["hero_nick"]
         }
         return query_name
 
@@ -608,16 +625,17 @@ class NewHeroCreateSt(BaseSt):
     def storage_query():
         return db.Hero.create
 
-    async def _traveled(self):
-        new_hero = await self.execution(
-            self.storage_query(), self.query_data()
+    @classmethod
+    async def _traveled(cls, train):
+        new_hero = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
         )
-        self.train.states['new_hero'] = new_hero
+        train.states['new_hero'] = new_hero
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
-        await self.add_out_answers()
+        cls.add_out_answers(train)
         return Code.IS_OK
 
 
@@ -629,10 +647,11 @@ class GetWalletSt(BaseSt):
     Обезаетльные данные: ['data']['id']
     Добавленные данные: ['states']['wallet']
     """
-    def query_data(self):
+    @classmethod
+    def query_data(cls, train):
         query_name = "get_wallet"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"]
+        train.queries[query_name] = {
+            "id": train.data["id"]
         }
         return query_name
 
@@ -640,13 +659,14 @@ class GetWalletSt(BaseSt):
     def storage_query():
         return db.Wallet.get
 
-    async def _traveled(self):
-        wallet = await self.execution(
-            self.storage_query(), self.query_data()
+    @classmethod
+    async def _traveled(cls, train):
+        wallet = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
         )
-        self.train.states["wallet"] = wallet
+        train.states["wallet"] = wallet
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -661,13 +681,15 @@ class IsThereWalletSt(BaseSt):
     Обезаетельные данные: ['states']['wallet']
     Добавленные данные: ['answers']['answer'] или None
     """
-    async def add_out_answers(self):
-        self.train.answers = "Создайте героя"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "Создайте героя"
 
-    async def _traveled(self):
-        wallet = self.train.states["wallet"]
+    @classmethod
+    async def _traveled(cls, train):
+        wallet = train.states["wallet"]
         if not wallet:
-            await self.add_out_answers()
+            cls.add_out_answers(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -682,11 +704,13 @@ class ViewWalletSt(BaseSt):
     Обезаетельные данные: ['states']['wallet']
     Добавленные данные: ['answers']['answer']
     """
-    async def add_out_answers(self):
-        self.train.answers = "кошелек игрока"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "кошелек игрока"
 
-    async def _traveled(self):
-        await self.add_out_answers()
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
         return Code.IS_OK
 
 
@@ -699,13 +723,15 @@ class IsThereHeroSt(BaseSt):
     Обезаетельные данные: ['states']['hero']
     Добавленные данные: ['answers']['answer'] или None
     """
-    async def add_out_answers(self):
-        self.train.answers = "Создайте героя"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "Создайте героя"
 
-    async def _traveled(self):
-        is_hero = self.train.states["user"]["is_hero"]
+    @classmethod
+    async def _traveled(cls, train):
+        is_hero = train.states["user"]["is_hero"]
         if not is_hero:
-            await self.add_out_answers()
+            cls.add_out_answers(train)
             return Code.EMERGENCY_STOP
 
         return Code.IS_OK
@@ -720,100 +746,180 @@ class ViewHeroSt(BaseSt):
     Обезаетельные данные: ['states']['hero']
     Добавленные данные: ['answers']['answer']
     """
-    async def add_out_answers(self):
-        self.train.answers = "Информация об герои игрока"
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "Информация об герои игрока"
 
-    async def _traveled(self):
-        await self.add_out_answers()
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
         return Code.IS_OK
 
 
-class UserIsNotAgreeSt(BaseSt):
-    async def add_out_answers(self):
-        state = {
-            "id": self.train.data["id"],
-            "language": self.train.states["user"]["language"]
-        }
-        self.train.answers = await an.UserIsNotAgree.get(state)
-
-    def query_data(self):
-        query_name = "is_not_agree"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"]
+class UserPickEnLanguage(BaseSt):
+    @classmethod
+    def query_data(cls, train):
+        query_name = "user_pick_en_language"
+        train.queries[query_name] = {
+            "id": train.data["id"]
         }
         return query_name
 
     @staticmethod
     def storage_query():
-        return db.User.is_not_agree_policy
+        return db.User.pick_en_language
 
-    async def _traveled(self):
-        await self.execution(
-            self.storage_query(), self.query_data()
+    @classmethod
+    async def _traveled(cls, train):
+        await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
         )
-        if self.exception:
+
+        if train.exception:
+            cls.add_exception_answer(train)
             return Code.EMERGENCY_STOP
 
-        await self.add_out_answers()
         return Code.IS_OK
 
 
-class UserIsAgreeHintSt(BaseSt):
-    async def add_out_answers(self):
-        state = {
-            "id": self.train.data["id"],
-            "language": self.train.states["user"]["language"]
+class UserPickRuLanguage(BaseSt):
+    @classmethod
+    def query_data(cls, train):
+        query_name = "user_pick_ru_language"
+        train.queries[query_name] = {
+            "id": train.data["id"]
         }
-        self.train.answers = await an.UserIsAgreeHint.get(state)
+        return query_name
 
-    async def _traveled(self):
-        is_hint = self.train.states["user"]["is_hint"]
+    @staticmethod
+    def storage_query():
+        return db.User.pick_ru_language
+
+    @classmethod
+    async def _traveled(cls, train):
+        await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
+        )
+
+        if train.exception:
+            cls.add_exception_answer(train)
+            return Code.EMERGENCY_STOP
+
+        return Code.IS_OK
+
+
+class CreateNewHeroHintSt(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.CreateNewHeroHint.get(state)
+
+    @classmethod
+    async def _traveled(cls, train):
+        is_hint = train.states["user"]["is_hint"]
         if not is_hint:
             return Code.IS_OK
 
-        await self.add_out_answers()
+        cls.add_out_answers(train)
         return Code.IS_OK
 
 
-class UserIsAgreeSt(BaseSt):
-    async def add_out_answers(self):
+class CreateNewHeroSt(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
         state = {
-            "id": self.train.data["id"],
-            "language": self.train.states["user"]["language"]
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
         }
-        self.train.answers = await an.UserIsAgree.get(state)
+        train.answers = an.CreateNewHero.get(state)
 
-    def query_data(self):
-        query_name = "is_agree"
-        self.train.queries[query_name] = {
-            "id": self.train.data["id"]
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
+        return Code.IS_OK
+
+
+class IsCorrectHeroNickSt(BaseSt):
+    """
+    Проверка имени героя на корректность.
+
+    Имя может содержать: a-z, A-Z, 0-9, точку,
+    нижнее подчеркивание.
+    """
+
+    @classmethod
+    def add_out_answer(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.HeroNickIsNotCorrect.get(state)
+
+    @classmethod
+    async def _traveled(cls, train):
+        hero_nick = train.data["hero_nick"]
+
+        if not fullmatch(r"^[A-Za-z0-9_.]{5,20}$", hero_nick):
+            cls.add_out_answer(train)
+            return Code.EMERGENCY_STOP
+
+        return Code.IS_OK
+
+
+class GetHeroSt(BaseSt):
+    """
+    Получение героя персонажа.
+
+    Контракт:
+    Обезательные данные: ['data']['id']
+    Добавленные данные: ['states']['hero']
+    """
+    @classmethod
+    def query_data(cls, train):
+        query_name = "get_hero"
+        train.queries[query_name] = {
+            "id": train.data["id"]
         }
         return query_name
 
     @staticmethod
     def storage_query():
-        return db.User.is_agree_policy
+        return db.Hero.get
 
-    async def _traveled(self):
-        await self.execution(
-            self.storage_query(), self.query_data()
+    @classmethod
+    async def _traveled(cls, train):
+        hero = await cls.execution(
+            train, cls.storage_query(), cls.query_data(train)
         )
+        train.states["hero"] = hero
 
-        if self.exception:
+        if train.exception:
             return Code.EMERGENCY_STOP
 
-        await self.add_out_answers()
         return Code.IS_OK
 
 
-class ViewLanguagesSt(BaseSt):
-    async def add_out_answers(self):
-        state = {
-            "id": self.train.data["id"],
-            "language": self.train.states["user"]["language"]
-        }
-        self.train.answers = await an.ViewLanguages.get(state)
+class IsNewHeroSt(BaseSt):
+    """
+    Проверка на то, имеет ли пользователь уже героя.
 
-    async def _traveled(self):
-        await self.add_out_answers()
+    Контракт:
+    Обезательные данные: ['states']['hero']
+    Добавленные данные: ['answers']['answer'] или None
+    """
+
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "у вас уже есть герой"
+
+    @classmethod
+    async def _traveled(cls, train):
+        hero = train.states["user"]['is_hero']
+        if hero:
+            cls.add_out_answers(train)
+            return Code.EMERGENCY_STOP
+
         return Code.IS_OK

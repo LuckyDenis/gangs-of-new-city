@@ -9,6 +9,6 @@ from tests.helpers.fake_i18n import I18N
 @pytest.mark.dispatcher
 def test__get_template(monkeypatch):
     monkeypatch.setattr(t, "I18N", I18N)
-    text = t.UserIsAgreeHint.get_template()
+    text = t.CreateNewHeroHint.get_template()
 
     assert isinstance(text, str)

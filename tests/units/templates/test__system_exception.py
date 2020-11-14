@@ -5,13 +5,17 @@ from app.views.cmds import Commands as Cmds
 from app.views.cmds import EmojizeCommands as ECmds
 from tests.helpers.fake_i18n import I18N
 
+STATE = {
+    "unique_id": "12312312-23123"
+}
+
 
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.dispatcher
 def test__get_template(monkeypatch):
     monkeypatch.setattr(t, "I18N", I18N)
-    text = t.StartMessage.get_template()
+    text = t.SystemException.get_template(STATE)
 
     assert isinstance(text, str)
 
@@ -20,13 +24,11 @@ def test__get_template(monkeypatch):
 @pytest.mark.core
 @pytest.mark.dispatcher
 @pytest.mark.parametrize("cmd", [
-    Cmds.ANO.mk(),
-    Cmds.AYES.mk(),
-    ECmds.WHITE_CHECK_MARK.mk(),
-    ECmds.WARNING.mk()
+    Cmds.BUG.mk(),
+    ECmds.BUG.mk()
 ])
 def test__checking_cmds(monkeypatch, cmd):
     monkeypatch.setattr(t, "I18N", I18N)
-    text = t.StartMessage.get_template()
+    text = t.SystemException.get_template(STATE)
 
     assert text.find(cmd) != -1

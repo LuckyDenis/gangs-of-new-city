@@ -13,7 +13,7 @@ from app.database.queries import User
 @pytest.mark.stations
 async def test__traveled(data, train, monkeypatch):
     monkeypatch.setattr(UserCreateSt, "execution", fake_execution)
-    status = await UserCreateSt(train).traveled()
+    status = await UserCreateSt.traveled(train)
 
     assert status is Code.IS_OK
     assert train.states["user"]["id"] == data["id"]
@@ -24,7 +24,7 @@ async def test__traveled(data, train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(UserCreateSt, "execution", fake_execution_with_error)
-    status = await UserCreateSt(train).traveled()
+    status = await UserCreateSt.traveled(train)
 
     assert status == Code.EMERGENCY_STOP
 
@@ -33,7 +33,7 @@ async def test__traveled_with_error(train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__query_data(train):
-    query_name = UserCreateSt(train).query_data()
+    query_name = UserCreateSt.query_data(train)
     query_data = train.queries[query_name]
     assert query_data.get("id")
     assert query_data.get("language")
@@ -45,8 +45,8 @@ async def test__query_data(train):
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__storage_query(train):
-    storage_query = UserCreateSt(train).storage_query()
+async def test__storage_query():
+    storage_query = UserCreateSt.storage_query()
     bound_method = User.create
     assert storage_query == bound_method
 

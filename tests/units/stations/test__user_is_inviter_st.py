@@ -24,7 +24,7 @@ async def test__traveled_user_is_not_invited(train):
     train.states[USER_KEY] = USER
     train.states[INVITER_KEY] = INVITER
 
-    status = await UserIsInviterSt(train).traveled()
+    status = await UserIsInviterSt.traveled(train)
     assert status is Code.IS_OK
 
 
@@ -35,5 +35,5 @@ async def test__traveled_user_is_invited(train):
     train.states[USER_KEY] = USER
     train.states[INVITER_KEY] = USER
 
-    status = await UserIsInviterSt(train).traveled()
+    status = await UserIsInviterSt.traveled(train)
     assert status is Code.EMERGENCY_STOP

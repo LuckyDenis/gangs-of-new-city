@@ -9,7 +9,7 @@ from app.core.statuses import Statuses as Code
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(train):
-    status = await ViewWalletSt(train).traveled()
+    status = await ViewWalletSt.traveled(train)
 
     assert status is Code.IS_OK
 

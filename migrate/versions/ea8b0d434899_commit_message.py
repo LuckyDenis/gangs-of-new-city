@@ -1,8 +1,8 @@
 """commit message
 
-Revision ID: 373c03803ec9
+Revision ID: ea8b0d434899
 Revises: 
-Create Date: 2020-11-13 14:44:07.261661
+Create Date: 2020-11-14 19:01:05.704655
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ from migrate import preset
 
 
 # revision identifiers, used by Alembic.
-revision = '373c03803ec9'
+revision = 'ea8b0d434899'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -35,7 +35,7 @@ def upgrade():
     sa.Column('visited', sa.DateTime(), nullable=True),
     sa.Column('registered', sa.DateTime(), nullable=True),
     sa.Column('is_bot', sa.Boolean(), nullable=True),
-    sa.Column('is_agreeing', sa.Boolean(), nullable=True),
+    sa.Column('is_accepted', sa.Boolean(), nullable=True),
     sa.Column('is_developer', sa.Boolean(), nullable=True),
     sa.Column('is_tester', sa.Boolean(), nullable=True),
     sa.Column('is_blocked', sa.Boolean(), nullable=True),

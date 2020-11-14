@@ -49,16 +49,42 @@ class User:
         return {"id": query["id"], "language": query["language"]}
 
     @classmethod
-    async def is_agree_policy(cls, query):
-        await cls.model.is_agree_policy(query)
+    async def is_accept_policy(cls, query):
+        state = {
+            "id": query["id"]
+        }
+        await cls.model.is_accept_policy(state)
 
     @classmethod
-    async def is_not_agree_policy(cls, query):
-        await cls.model.is_not_agree_policy(query)
+    async def is_not_accept_policy(cls, query):
+        state = {
+            "id": query["id"]
+        }
+        await cls.model.is_not_accept_policy(state)
 
     @classmethod
-    async def user_time_visited_update(cls, query):
-        await cls.model.user_time_visited_update(query)
+    async def time_visited_update(cls, query):
+        state = {
+            "id": query["id"],
+            "visited": query["visited"]
+        }
+        await cls.model.time_visited_update(state)
+
+    @classmethod
+    async def pick_ru_language(cls, query):
+        state = {
+            "id": query["id"],
+            "language": m.fixture.Languages.RUSSIAN
+        }
+        await cls.model.language_update(state)
+
+    @classmethod
+    async def pick_en_language(cls, query):
+        state = {
+            "id": query["id"],
+            "language": m.fixture.Languages.ENGLISH
+        }
+        await cls.model.language_update(state)
 
 
 class Hero:
