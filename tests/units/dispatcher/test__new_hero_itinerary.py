@@ -11,7 +11,7 @@ STATIONS = [
     st.GetUserSt,
     st.IsThereUserSt,
     st.UserTimeVisitedUpdateSt,
-    st.DoesUserHaveAgreeingSt,
+    st.DoesUserRejectPolicySt,
     st.IsUserBlockedSt,
     st.IsCorrectHeroNickSt,
     st.IsNewHeroSt,

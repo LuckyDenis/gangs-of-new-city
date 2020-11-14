@@ -1,7 +1,7 @@
 # coding: utf8
 import pytest
 
-from app.core.stations import DoesUserHaveAgreeingSt
+from app.core.stations import DoesUserRejectPolicySt
 from app.database.fixture import Languages
 from app.core.statuses import Statuses as Code
 
@@ -16,8 +16,8 @@ def up_train(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(up_train):
-    up_train.states["user"]["is_agreeing"] = True
-    status = await DoesUserHaveAgreeingSt.traveled(up_train)
+    up_train.states["user"]["is_accepted"] = True
+    status = await DoesUserRejectPolicySt.traveled(up_train)
     assert status is Code.IS_OK
 
 
@@ -26,7 +26,7 @@ async def test__traveled(up_train):
 @pytest.mark.stations
 async def test__traveled_not_has_agreeing(up_train):
     up_train.states["user"]["has_agreeing"] = False
-    status = await DoesUserHaveAgreeingSt.traveled(up_train)
+    status = await DoesUserRejectPolicySt.traveled(up_train)
 
     assert status is Code.EMERGENCY_STOP
 

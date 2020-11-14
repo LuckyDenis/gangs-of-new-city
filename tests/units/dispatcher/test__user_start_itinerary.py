@@ -1,7 +1,7 @@
 # coding: utf8
 import pytest
 from app.core import stations as st
-from app.core.dispatcher import NewUserItinerary
+from app.core.dispatcher import UserStartItinerary
 
 
 REQUIRED_KEYS = ["id", "language", "datetime"]
@@ -24,7 +24,7 @@ STATIONS = [
 @pytest.mark.core
 @pytest.mark.dispatcher
 def test__required_keys(data):
-    itinerary = NewUserItinerary(data)
+    itinerary = UserStartItinerary(data)
     required_keys = itinerary.required_keys()
 
     assert sorted(required_keys) == sorted(REQUIRED_KEYS)
@@ -34,7 +34,7 @@ def test__required_keys(data):
 @pytest.mark.core
 @pytest.mark.dispatcher
 def test__stations(data):
-    itinerary = NewUserItinerary(data)
+    itinerary = UserStartItinerary(data)
     stations = itinerary.stations()
 
     assert stations == STATIONS

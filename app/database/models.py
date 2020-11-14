@@ -41,21 +41,21 @@ class User(db.Model):
     visited = sa.Column(sa.DateTime())
     registered = sa.Column(sa.DateTime())
     is_bot = sa.Column(sa.Boolean(), default=False)
-    is_agreeing = sa.Column(sa.Boolean(), default=False)
+    is_accepted = sa.Column(sa.Boolean(), default=False)
     is_developer = sa.Column(sa.Boolean(), default=False)
     is_tester = sa.Column(sa.Boolean(), default=False)
     is_blocked = sa.Column(sa.Boolean(), default=False)
     is_hint = sa.Column(sa.Boolean(), default=True)
 
     @classmethod
-    async def get(cls, states):
+    async def get(cls, state):
         return await db.select(
             [cls.id,
              cls.language,
              cls.is_bot,
              cls.is_blocked,
              cls.is_developer,
-             cls.is_agreeing,
+             cls.is_accepted,
              cls.is_tester,
              cls.is_hint,
              Hero.nick.label("is_hero")]
@@ -64,44 +64,53 @@ class User(db.Model):
                 Hero, cls.id == Hero.user
             )
         ).where(
-            cls.id == states["id"]
+            cls.id == state["id"]
         ).gino.one_or_none()
 
     @classmethod
-    async def create(cls, states):
+    async def create(cls, state):
         await cls.insert().values(
-            id=states["id"],
-            is_bot=states["is_bot"],
-            visited=states["visited"],
-            registered=states["registered"],
-            language=states["language"]
+            id=state["id"],
+            is_bot=state["is_bot"],
+            visited=state["visited"],
+            registered=state["registered"],
+            language=state["language"]
         ).gino.status()
 
     @classmethod
-    async def is_agree_policy(cls, states):
+    async def is_accept_policy(cls, state):
         async with db.transaction():
             await cls.update.values(
-                is_agreeing=True
+                is_accepted=True
             ).where(
-                cls.id == states["id"]
+                cls.id == state["id"]
             ).gino.status()
 
     @classmethod
-    async def is_not_agree_policy(cls, states):
+    async def is_not_accept_policy(cls, state):
         async with db.transaction():
             await cls.update.values(
-                is_agreeing=False
+                is_accepted=False
             ).where(
-                cls.id == states["id"]
+                cls.id == state["id"]
             ).gino.status()
 
     @classmethod
-    async def user_time_visited_update(cls, states):
+    async def time_visited_update(cls, state):
         async with db.transaction():
             await cls.update.values(
-                visited=states["visited"]
+                visited=state["visited"]
             ).where(
-                cls.id == states["id"]
+                cls.id == state["id"]
+            ).gino.status()
+
+    @classmethod
+    async def language_update(cls, state):
+        async with db.transaction():
+            await cls.update.values(
+                language=state["language"]
+            ).where(
+                cls.id == state["id"]
             ).gino.status()
 
 

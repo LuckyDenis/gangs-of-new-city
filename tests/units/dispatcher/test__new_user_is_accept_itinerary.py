@@ -1,7 +1,7 @@
 # coding: utf8
 import pytest
 from app.core import stations as st
-from app.core.dispatcher import UserIsNotAgreeItinerary
+from app.core.dispatcher import NewUserIsAcceptItinerary
 
 
 REQUIRED_KEYS = ["id"]
@@ -11,7 +11,7 @@ STATIONS = [
     st.GetUserSt,
     st.IsThereUserSt,
     st.IsUserBlockedSt,
-    st.UserIsNotAgreeSt,
+    st.NewUserIsAcceptSt,
     st.FinishRailwayDepotSt
 ]
 
@@ -20,7 +20,7 @@ STATIONS = [
 @pytest.mark.core
 @pytest.mark.dispatcher
 def test__required_keys(data):
-    itinerary = UserIsNotAgreeItinerary(data)
+    itinerary = NewUserIsAcceptItinerary(data)
     required_keys = itinerary.required_keys()
 
     assert sorted(required_keys) == sorted(REQUIRED_KEYS)
@@ -30,7 +30,7 @@ def test__required_keys(data):
 @pytest.mark.core
 @pytest.mark.dispatcher
 def test__stations(data):
-    itinerary = UserIsNotAgreeItinerary(data)
+    itinerary = NewUserIsAcceptItinerary(data)
     stations = itinerary.stations()
 
     assert stations == STATIONS

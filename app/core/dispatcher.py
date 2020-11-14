@@ -79,7 +79,7 @@ class BaseItinerary:
         raise NotImplementedError
 
 
-class NewUserItinerary(BaseItinerary):
+class UserStartItinerary(BaseItinerary):
     """
     cmd: /start
 
@@ -112,47 +112,87 @@ class NewUserItinerary(BaseItinerary):
         ]
 
 
-class UserIsNotAgreeItinerary(BaseItinerary):
+class NewUserIsNotAcceptItinerary(BaseItinerary):
     """
-    cmd: /ano
+    cmd: /fnotaccept
     """
     def required_keys(self):
         return ["id"]
 
     def stations(self):
         """
-        Сначало проеверяем, имеет пользователь героя,
-        потом проверяем уникальность ника героя.
+        Пользователь отказался принять политику.
         """
         return [
             st.StartRailwayDepotSt,
             st.GetUserSt,
             st.IsThereUserSt,
             st.IsUserBlockedSt,
-            st.UserIsNotAgreeSt,
+            st.NewUserIsNotAcceptSt,
             st.FinishRailwayDepotSt
         ]
 
 
-class UserIsAgreeItinerary(BaseItinerary):
+class NewUserIsAcceptItinerary(BaseItinerary):
     """
-    cmd: /ayes
+    cmd: /faccept
     """
     def required_keys(self):
         return ["id"]
 
     def stations(self):
         """
-        Сначало проеверяем, имеет пользователь героя,
-        потом проверяем уникальность ника героя.
+        Новый пользователь принял политику,
+        показываем ему выбор языка.
         """
         return [
             st.StartRailwayDepotSt,
             st.GetUserSt,
             st.IsThereUserSt,
             st.IsUserBlockedSt,
-            st.UserIsAgreeHintSt,
-            st.UserIsAgreeSt,
+            st.NewUserIsAcceptSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
+class NewUserPickEnLanguageItinerary(BaseItinerary):
+    """
+    cmd: /fen
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.UserTimeVisitedUpdateSt,
+            st.DoesUserRejectPolicySt,
+            st.UserPickEnLanguage,
+            st.CreateNewHeroHintSt,
+            st.CreateNewHeroSt,
+            st.FinishRailwayDepotSt
+        ]
+
+
+class NewUserPickRuLanguageItinerary(BaseItinerary):
+    """
+    cmd: /fru
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.UserTimeVisitedUpdateSt,
+            st.DoesUserRejectPolicySt,
+            st.UserPickRuLanguage,
+            st.CreateNewHeroHintSt,
+            st.CreateNewHeroSt,
             st.FinishRailwayDepotSt
         ]
 
@@ -170,7 +210,7 @@ class ViewLanguagesItinerary(BaseItinerary):
             st.GetUserSt,
             st.IsThereUserSt,
             st.UserTimeVisitedUpdateSt,
-            st.DoesUserHaveAgreeingSt,
+            st.DoesUserRejectPolicySt,
             st.ViewLanguagesSt,
             st.FinishRailwayDepotSt
         ]
@@ -193,7 +233,7 @@ class NewHeroItinerary(BaseItinerary):
             st.GetUserSt,
             st.IsThereUserSt,
             st.UserTimeVisitedUpdateSt,
-            st.DoesUserHaveAgreeingSt,
+            st.DoesUserRejectPolicySt,
             st.IsUserBlockedSt,
             st.IsCorrectHeroNickSt,
             st.IsNewHeroSt,

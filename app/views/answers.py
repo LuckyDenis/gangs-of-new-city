@@ -72,68 +72,55 @@ class UserIsNotFound(BaseAnswer):
 class NewUser(BaseAnswer):
     @classmethod
     def _get(cls, state):
-        keyboard = k.StartKeyboard.get()
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.StartMessage.get_template(),
-            "keyboard": keyboard
+            "text": t.NewUser.get_template(),
+            "keyboard": k.NewUserKeyboard.get()
         }
 
 
-class UserIsNotAgree(BaseAnswer):
-    @classmethod
-    def _get(cls, state):
-        keyboard = k.StartKeyboard.get()
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsNotAgree.get_template(),
-            "keyboard": keyboard
-        }
-
-
-class UserIsAgree(BaseAnswer):
-    @classmethod
-    def _get(cls, state):
-        keyboard = k.Remove.get()
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsAgree.get_template(),
-            "keyboard": keyboard
-        }
-
-
-class UserIsAgreeHint(BaseAnswer):
-    @classmethod
-    def _get(cls, state):
-        keyboard = k.Remove.get()
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsAgreeHint.get_template(),
-            "keyboard": keyboard
-        }
-
-
-class UserIsNotNew(BaseAnswer):
+class NewUserIsNotAccept(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": "нашли пользователя"
+            "text": t.NewUserIsNotAccept.get_template(),
+            "keyboard": k.NewUserIsNotAcceptKeyboard.get()
         }
 
 
-class HeroNickIsNotCorrect(BaseAnswer):
+class NewUserIsAccept(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.HeroNickIsNotCorrect.get_template()
+            "text": t.NewUserIsAccept.get_template(),
+            "keyboard": k.Remove.get()
+        }
+
+
+class UserIsReturn(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.UserIsReturn,
+            "keyboard": k.UserIsReturnKeyboard
+        }
+
+
+class UserRejectPolicy(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.UserRejectPolicy.get_template(),
+            "keyboard": k.UserRejectPolicyKeyboard.get()
         }
 
 
@@ -148,14 +135,35 @@ class ViewLanguages(BaseAnswer):
         }
 
 
-class DoesUserHaveAgreeing(BaseAnswer):
+class HeroNickIsNotCorrect(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.DoesUserHaveAgreeing.get_template(),
-            "keyboard": k.StartKeyboard.get()
+            "text": t.HeroNickIsNotCorrect.get_template()
+        }
+
+
+class CreateNewHeroHint(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.CreateNewHeroHint.get_template()
+        }
+
+
+class CreateNewHero(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        keyboard = k.Remove.get()
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.CreateNewHero.get_template(),
+            "keyboard": keyboard
         }
 
 

@@ -1,7 +1,7 @@
 # coding: utf8
 import pytest
 
-from app.core.stations import UserIsAgreeSt
+from app.core.stations import NewUserIsNotAcceptSt
 from app.database.fixture import Languages
 from app.core.statuses import Statuses as Code
 from app.database.queries import User
@@ -19,8 +19,9 @@ def up_train(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(up_train, monkeypatch):
-    monkeypatch.setattr(UserIsAgreeSt, "execution", fake_execution_empty)
-    status = await UserIsAgreeSt.traveled(up_train)
+    monkeypatch.setattr(
+        NewUserIsNotAcceptSt, "execution", fake_execution_empty)
+    status = await NewUserIsNotAcceptSt.traveled(up_train)
     assert status is Code.IS_OK
 
 
@@ -29,8 +30,8 @@ async def test__traveled(up_train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(up_train, monkeypatch):
     monkeypatch.setattr(
-        UserIsAgreeSt, "execution", fake_execution_with_error)
-    status = await UserIsAgreeSt.traveled(up_train)
+        NewUserIsNotAcceptSt, "execution", fake_execution_with_error)
+    status = await NewUserIsNotAcceptSt.traveled(up_train)
 
     assert status is Code.EMERGENCY_STOP
 
@@ -39,7 +40,7 @@ async def test__traveled_with_error(up_train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__query_data(up_train):
-    query_name = UserIsAgreeSt.query_data(up_train)
+    query_name = NewUserIsNotAcceptSt.query_data(up_train)
     query_data = up_train.queries[query_name]
     assert query_data.get("id")
 
@@ -48,8 +49,8 @@ async def test__query_data(up_train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__storage_query():
-    storage_query = UserIsAgreeSt.storage_query()
-    bound_method = User.is_agree_policy
+    storage_query = NewUserIsNotAcceptSt.storage_query()
+    bound_method = User.is_not_accept_policy
     assert storage_query == bound_method
 
 
