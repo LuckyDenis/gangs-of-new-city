@@ -18,9 +18,8 @@ def up_train(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(up_train, monkeypatch):
-    train = up_train
     monkeypatch.setattr(NewHeroCreateSt, "execution", fake_execution_empty)
-    status = await NewHeroCreateSt(train).traveled()
+    status = await NewHeroCreateSt.traveled(up_train)
     assert status is Code.IS_OK
 
 
@@ -28,10 +27,9 @@ async def test__traveled(up_train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_with_error(up_train, monkeypatch):
-    train = up_train
     monkeypatch.setattr(
         NewHeroCreateSt, "execution", fake_execution_with_error)
-    status = await NewHeroCreateSt(train).traveled()
+    status = await NewHeroCreateSt.traveled(up_train)
 
     assert status is Code.EMERGENCY_STOP
 
@@ -40,9 +38,8 @@ async def test__traveled_with_error(up_train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__query_data(up_train):
-    train = up_train
-    query_name = NewHeroCreateSt(train).query_data()
-    query_data = train.queries[query_name]
+    query_name = NewHeroCreateSt.query_data(up_train)
+    query_data = up_train.queries[query_name]
     assert query_data.get("id")
     assert query_data.get("hero_nick")
 
@@ -50,8 +47,8 @@ async def test__query_data(up_train):
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__storage_query(train):
-    storage_query = NewHeroCreateSt(train).storage_query()
+async def test__storage_query():
+    storage_query = NewHeroCreateSt.storage_query()
     bound_method = Hero.create
     assert storage_query == bound_method
 

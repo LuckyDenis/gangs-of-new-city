@@ -10,19 +10,19 @@ from app.views.helpers import Types
 @pytest.mark.unit
 @pytest.mark.views
 @pytest.mark.answers
-async def test__inside_get(state, monkeypatch):
+def test__inside_get(state, monkeypatch):
     monkeypatch.setattr(an, "I18N", I18N)
     monkeypatch.setattr(t, "SystemException", FakeMessage)
-    await an.SystemException._get(state)
+    an.SystemException._get(state)
 
 
 @pytest.mark.unit
 @pytest.mark.views
 @pytest.mark.answers
-async def test__get(state, data, monkeypatch):
+def test__get(state, data, monkeypatch):
     monkeypatch.setattr(an, "I18N", I18N)
     monkeypatch.setattr(t, "SystemException", FakeMessage)
-    answer = await an.SystemException.get(state)
+    answer = an.SystemException.get(state)
 
     assert answer["chat_id"] == data["id"]
     assert answer["message_type"] == Types.TEXT_MESSAGE

@@ -14,7 +14,7 @@ KEY_REFERRAL_ID = "referral_id"
 @pytest.mark.stations
 async def test__traveled(train):
     train.data[KEY_REFERRAL_ID] = REFERRAL_ID
-    status = await DoesUserHaveReferralIdSt(train).traveled()
+    status = await DoesUserHaveReferralIdSt.traveled(train)
     assert status is Code.IS_OK
 
 
@@ -23,6 +23,6 @@ async def test__traveled(train):
 @pytest.mark.stations
 async def test__traveled_not_ref_id(train):
     train.data[KEY_REFERRAL_ID] = VOID_REFERRAL_ID
-    status = await DoesUserHaveReferralIdSt(train).traveled()
+    status = await DoesUserHaveReferralIdSt.traveled(train)
 
     assert status is Code.EMERGENCY_STOP

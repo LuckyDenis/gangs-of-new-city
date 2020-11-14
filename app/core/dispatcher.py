@@ -2,6 +2,7 @@
 
 from logging import getLogger
 from pprint import pformat
+from pprint import pp
 
 
 from app.core import stations as st
@@ -34,7 +35,8 @@ class BaseItinerary:
         """
         self.add_checkpoint()
         for station in self.stations():
-            is_ok = await station(self.train).traveled()
+            is_ok = await station.traveled(self.train)
+            pp(self.train.payload)
             if not is_ok:
                 break
         logger.info(pformat(self.train.payload))

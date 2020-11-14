@@ -18,7 +18,7 @@ KEY_REFERRAL_ID = "referral_id"
 async def test__traveled(train, monkeypatch):
     monkeypatch.setattr(GetInviterSt, "execution", fake_execution)
     train.data[KEY_REFERRAL_ID] = REFERRAL_ID
-    status = await GetInviterSt(train).traveled()
+    status = await GetInviterSt.traveled(train)
 
     assert status == Code.IS_OK
     assert isinstance(train.states['inviter'], dict)
@@ -29,7 +29,7 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(GetInviterSt, "execution", fake_execution_with_error)
-    status = await GetInviterSt(train).traveled()
+    status = await GetInviterSt.traveled(train)
 
     assert status == Code.EMERGENCY_STOP
 
@@ -38,7 +38,7 @@ async def test__traveled_with_error(train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__query_data(train):
-    query_name = GetInviterSt(train).query_data()
+    query_name = GetInviterSt.query_data(train)
     query_data = train.queries[query_name]
     assert query_data.get("id")
 
@@ -46,7 +46,7 @@ async def test__query_data(train):
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__storage_query(train):
-    storage_query = GetInviterSt(train).storage_query()
+async def test__storage_query():
+    storage_query = GetInviterSt.storage_query()
     bound_method = User.get
     assert storage_query == bound_method

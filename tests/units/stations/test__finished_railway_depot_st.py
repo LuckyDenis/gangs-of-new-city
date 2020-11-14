@@ -9,6 +9,6 @@ from app.core.train import Train
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__traveled(data):
-    status = await FinishRailwayDepotSt(Train(data)).traveled()
+async def test__traveled(train):
+    status = await FinishRailwayDepotSt.traveled(train)
     assert status == Code.IS_OK

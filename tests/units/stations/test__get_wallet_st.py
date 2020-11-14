@@ -16,7 +16,7 @@ WALLET_KEY = "wallet"
 @pytest.mark.stations
 async def test__traveled(train, monkeypatch):
     monkeypatch.setattr(GetWalletSt, "execution", fake_execution)
-    status = await GetWalletSt(train).traveled()
+    status = await GetWalletSt.traveled(train)
     assert status == Code.IS_OK
     assert isinstance(train.states[WALLET_KEY], dict)
 
@@ -26,7 +26,7 @@ async def test__traveled(train, monkeypatch):
 @pytest.mark.stations
 async def test__traveled_with_error(train, monkeypatch):
     monkeypatch.setattr(GetWalletSt, "execution", fake_execution_with_error)
-    status = await GetWalletSt(train).traveled()
+    status = await GetWalletSt.traveled(train)
     assert status == Code.EMERGENCY_STOP
 
 
@@ -34,7 +34,7 @@ async def test__traveled_with_error(train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__query_data(train):
-    query_name = GetWalletSt(train).query_data()
+    query_name = GetWalletSt.query_data(train)
     query_data = train.queries[query_name]
     assert query_data.get("id")
 
@@ -42,7 +42,7 @@ async def test__query_data(train):
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__storage_query(train):
-    storage_query = GetWalletSt(train).storage_query()
+async def test__storage_query():
+    storage_query = GetWalletSt.storage_query()
     bound_method = Wallet.get
     assert storage_query == bound_method

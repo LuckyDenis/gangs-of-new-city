@@ -31,22 +31,20 @@ def up_train(train):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled(up_train, monkeypatch):
-    train = up_train
     monkeypatch.setattr(AddReferralDataSt, "execution", fake_execution)
-    status = await AddReferralDataSt(train).traveled()
+    status = await AddReferralDataSt.traveled(up_train)
 
     assert status == Code.IS_OK
-    assert isinstance(train.states['inviter'], dict)
+    assert isinstance(up_train.states['inviter'], dict)
 
 
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
 async def test__traveled_with_error(up_train, monkeypatch):
-    train = up_train
     monkeypatch.setattr(
         AddReferralDataSt, "execution", fake_execution_with_error)
-    status = await AddReferralDataSt(train).traveled()
+    status = await AddReferralDataSt.traveled(up_train)
 
     assert status == Code.EMERGENCY_STOP
 
@@ -55,10 +53,8 @@ async def test__traveled_with_error(up_train, monkeypatch):
 @pytest.mark.core
 @pytest.mark.stations
 async def test__query_data(up_train):
-    train = up_train
-
-    query_name = AddReferralDataSt(train).query_data()
-    query_data = train.queries[query_name]
+    query_name = AddReferralDataSt.query_data(up_train)
+    query_data = up_train.queries[query_name]
     assert query_data.get("invited")
     assert query_data.get("inviter")
 
@@ -66,8 +62,8 @@ async def test__query_data(up_train):
 @pytest.mark.unit
 @pytest.mark.core
 @pytest.mark.stations
-async def test__storage_query(train):
-    storage_query = AddReferralDataSt(train).storage_query()
+async def test__storage_query():
+    storage_query = AddReferralDataSt.storage_query()
     bound_method = Referral.create
     assert storage_query == bound_method
 
