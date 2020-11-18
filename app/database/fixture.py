@@ -18,6 +18,5 @@ class Languages:
 
 
 class Gangs:
-    RED = "red"
-    YELLOW = "yellow"
+    GREEN = "green"
     ORANGE = "orange"

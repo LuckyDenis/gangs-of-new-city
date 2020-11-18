@@ -150,7 +150,31 @@ class NewUserIsAcceptItinerary(BaseItinerary):
             st.GetUserSt,
             st.IsThereUserSt,
             st.IsUserBlockedSt,
-            st.NewUserIsAcceptSt,
+            st.UserIsAcceptSt,
+            st.ViewNewUserIsAccept,
+            st.FinishRailwayDepotSt
+        ]
+
+
+class UserIsAcceptItinerary(BaseItinerary):
+    """
+    cmd: /saccept
+    """
+    def required_keys(self):
+        return ["id"]
+
+    def stations(self):
+        """
+        Новый пользователь принял политику,
+        показываем ему выбор языка.
+        """
+        return [
+            st.StartRailwayDepotSt,
+            st.GetUserSt,
+            st.IsThereUserSt,
+            st.IsUserBlockedSt,
+            st.UserIsAcceptSt,
+            st.ViewUserIsAccept,
             st.FinishRailwayDepotSt
         ]
 
@@ -171,7 +195,7 @@ class NewUserPickEnLanguageItinerary(BaseItinerary):
             st.DoesUserRejectPolicySt,
             st.UserPickEnLanguage,
             st.CreateNewHeroHintSt,
-            st.CreateNewHeroSt,
+            st.ViewCreateNewHeroSt,
             st.FinishRailwayDepotSt
         ]
 
@@ -192,7 +216,7 @@ class NewUserPickRuLanguageItinerary(BaseItinerary):
             st.DoesUserRejectPolicySt,
             st.UserPickRuLanguage,
             st.CreateNewHeroHintSt,
-            st.CreateNewHeroSt,
+            st.ViewCreateNewHeroSt,
             st.FinishRailwayDepotSt
         ]
 
@@ -260,8 +284,8 @@ class GetWalletItinerary(BaseItinerary):
             st.GetUserSt,
             st.IsThereUserSt,
             st.IsUserBlockedSt,
+            st.IsThereHeroSt,
             st.GetWalletSt,
-            st.IsThereWalletSt,
             st.ViewWalletSt,
             st.FinishRailwayDepotSt
         ]

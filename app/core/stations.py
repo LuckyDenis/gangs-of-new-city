@@ -426,18 +426,10 @@ class NewUserIsNotAcceptSt(BaseSt):
         return Code.IS_OK
 
 
-class NewUserIsAcceptSt(BaseSt):
-    @classmethod
-    def add_out_answers(cls, train):
-        state = {
-            "id": train.data["id"],
-            "language": train.states["user"]["language"]
-        }
-        train.answers = an.NewUserIsAccept.get(state)
-
+class UserIsAcceptSt(BaseSt):
     @classmethod
     def query_data(cls, train):
-        query_name = "new_user_is_accept"
+        query_name = "user_is_accept"
         train.queries[query_name] = {
             "id": train.data["id"]
         }
@@ -456,6 +448,35 @@ class NewUserIsAcceptSt(BaseSt):
         if train.exception:
             return Code.EMERGENCY_STOP
 
+        return Code.IS_OK
+
+
+class ViewNewUserIsAccept(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.NewUserIsAccept.get(state)
+
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
+        return Code.IS_OK
+
+
+class ViewUserIsAccept(BaseSt):
+    @classmethod
+    def add_out_answers(cls, train):
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.NewUserIsAccept.get(state)
+
+    @classmethod
+    async def _traveled(cls, train):
         cls.add_out_answers(train)
         return Code.IS_OK
 
@@ -556,16 +577,19 @@ class IsNewHeroUniqueSt(BaseSt):
     героя с таким же именем).
 
     Контракт:
-    Обезательные данные: ['data']['hero_nick']
-    Добавленные данные: ['states']['is_hero']
-
-    todo:
-    Подумать: Надо разивать на два класса или это
-    все таки одно логическое действие.
+    Обезательные данные: ['data']['id']
+                         ['data']['hero_nick']
+                         ['states']['user']['language']
+    Добавленные данные: ['states']['is_nick_busy']
+                        ['answers']['answer']
     """
     @classmethod
     def add_out_answers(cls, train):
-        train.answers = "не уникальное имя персонажа"
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.NewHeroIsNotUnique.get(state)
 
     @classmethod
     def query_data(cls, train):
@@ -672,48 +696,6 @@ class GetWalletSt(BaseSt):
         return Code.IS_OK
 
 
-class IsThereWalletSt(BaseSt):
-    """
-    Отвечает за проверку существование кошелька героя в базе данных.
-    Если кошелька нет, подразумевается, что герой еще не создан.
-
-    Контракт:
-    Обезаетельные данные: ['states']['wallet']
-    Добавленные данные: ['answers']['answer'] или None
-    """
-    @classmethod
-    def add_out_answers(cls, train):
-        train.answers = "Создайте героя"
-
-    @classmethod
-    async def _traveled(cls, train):
-        wallet = train.states["wallet"]
-        if not wallet:
-            cls.add_out_answers(train)
-            return Code.EMERGENCY_STOP
-
-        return Code.IS_OK
-
-
-class ViewWalletSt(BaseSt):
-    """
-    Отвечает за получение отрендеренного ответа для вывода информации
-    о кошельке героя.
-
-    Контракт:
-    Обезаетельные данные: ['states']['wallet']
-    Добавленные данные: ['answers']['answer']
-    """
-    @classmethod
-    def add_out_answers(cls, train):
-        train.answers = "кошелек игрока"
-
-    @classmethod
-    async def _traveled(cls, train):
-        cls.add_out_answers(train)
-        return Code.IS_OK
-
-
 class IsThereHeroSt(BaseSt):
     """
     Отвечает за проверку существование героя в базе данных.
@@ -725,7 +707,11 @@ class IsThereHeroSt(BaseSt):
     """
     @classmethod
     def add_out_answers(cls, train):
-        train.answers = "Создайте героя"
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.ThereIsNotHero.get(state)
 
     @classmethod
     async def _traveled(cls, train):
@@ -737,26 +723,13 @@ class IsThereHeroSt(BaseSt):
         return Code.IS_OK
 
 
-class ViewHeroSt(BaseSt):
+class UserPickEnLanguage(BaseSt):
     """
-    Отвечает за получение отрендеренного ответа для вывода информации
-    о герое.
+    Пользователь выбирает английский язык
 
     Контракт:
-    Обезаетельные данные: ['states']['hero']
-    Добавленные данные: ['answers']['answer']
+    Обезательные данные: ['data']['id']
     """
-    @classmethod
-    def add_out_answers(cls, train):
-        train.answers = "Информация об герои игрока"
-
-    @classmethod
-    async def _traveled(cls, train):
-        cls.add_out_answers(train)
-        return Code.IS_OK
-
-
-class UserPickEnLanguage(BaseSt):
     @classmethod
     def query_data(cls, train):
         query_name = "user_pick_en_language"
@@ -783,6 +756,12 @@ class UserPickEnLanguage(BaseSt):
 
 
 class UserPickRuLanguage(BaseSt):
+    """
+    Пользователь выбирает русский язык.
+
+    Контракт:
+    Обезательные данные: ['data']['id']
+    """
     @classmethod
     def query_data(cls, train):
         query_name = "user_pick_ru_language"
@@ -809,6 +788,15 @@ class UserPickRuLanguage(BaseSt):
 
 
 class CreateNewHeroHintSt(BaseSt):
+    """
+    Отображение подсказки по созданию героя.
+
+    Контракт:
+    Обезательные данные: ['data']['id']
+                         ['states']['user']['language']
+                         ['states']['user']['is_hint']
+    Добавленные данные: ['answers']['answer']
+    """
     @classmethod
     def add_out_answers(cls, train):
         state = {
@@ -827,7 +815,15 @@ class CreateNewHeroHintSt(BaseSt):
         return Code.IS_OK
 
 
-class CreateNewHeroSt(BaseSt):
+class ViewCreateNewHeroSt(BaseSt):
+    """
+    Отрисовка сообщения по тому как создовать героя.
+
+    Контракт:
+    Обезательные данные: ['data']['id']
+                         ['states']['user']['language']
+    Добавленные данные: ['answers']['answer']
+    """
     @classmethod
     def add_out_answers(cls, train):
         state = {
@@ -848,6 +844,13 @@ class IsCorrectHeroNickSt(BaseSt):
 
     Имя может содержать: a-z, A-Z, 0-9, точку,
     нижнее подчеркивание.
+
+    Контракт:
+    Обезательные данные: ['data']['id']
+                         ['data']['hero_nick']
+                         ['states']['user']['language']
+
+    Добавленные данные: ['states']['hero']
     """
 
     @classmethod
@@ -907,19 +910,63 @@ class IsNewHeroSt(BaseSt):
     Проверка на то, имеет ли пользователь уже героя.
 
     Контракт:
-    Обезательные данные: ['states']['hero']
+    Обезательные данные: ['states']['user']['is_hero']
+                         ['states']['user']['language']
+                         ['data']['id']
     Добавленные данные: ['answers']['answer'] или None
     """
 
     @classmethod
     def add_out_answers(cls, train):
-        train.answers = "у вас уже есть герой"
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.HeroIsNotNew.get(state)
 
     @classmethod
     async def _traveled(cls, train):
-        hero = train.states["user"]['is_hero']
-        if hero:
+        is_hero = train.states["user"]['is_hero']
+        if is_hero:
             cls.add_out_answers(train)
             return Code.EMERGENCY_STOP
 
+        return Code.IS_OK
+
+
+class ViewHeroSt(BaseSt):
+    """
+    Отвечает за получение отрендеренного ответа для вывода информации
+    о герое.
+
+    Контракт:
+    Обезаетельные данные: ['states']['hero']
+    Добавленные данные: ['answers']['answer']
+    """
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "Информация об герои игрока"
+
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
+        return Code.IS_OK
+
+
+class ViewWalletSt(BaseSt):
+    """
+    Отвечает за получение отрендеренного ответа для вывода информации
+    о кошельке героя.
+
+    Контракт:
+    Обезаетельные данные: ['states']['wallet']
+    Добавленные данные: ['answers']['answer']
+    """
+    @classmethod
+    def add_out_answers(cls, train):
+        train.answers = "кошелек игрока"
+
+    @classmethod
+    async def _traveled(cls, train):
+        cls.add_out_answers(train)
         return Code.IS_OK
