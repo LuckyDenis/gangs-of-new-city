@@ -76,7 +76,8 @@ class NewUser(BaseAnswer):
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
             "text": t.NewUser.get_template(),
-            "keyboard": k.NewUserKeyboard.get()
+            "keyboard": k.NewUserKeyboard.get(),
+            "disable_web_page_preview": True
         }
 
 
@@ -87,11 +88,23 @@ class NewUserIsNotAccept(BaseAnswer):
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
             "text": t.NewUserIsNotAccept.get_template(),
-            "keyboard": k.NewUserIsNotAcceptKeyboard.get()
+            "keyboard": k.NewUserIsNotAcceptKeyboard.get(),
+            "disable_web_page_preview": True
         }
 
 
 class NewUserIsAccept(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.NewUserIsAccept.get_template(),
+            "keyboard": k.Remove.get()
+        }
+
+
+class UserIsAccept(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
@@ -108,8 +121,8 @@ class UserIsReturn(BaseAnswer):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.UserIsReturn,
-            "keyboard": k.UserIsReturnKeyboard
+            "text": t.UserIsReturn.get_template(),
+            "keyboard": k.UserIsReturnKeyboard.get()
         }
 
 
@@ -158,65 +171,42 @@ class CreateNewHeroHint(BaseAnswer):
 class CreateNewHero(BaseAnswer):
     @classmethod
     def _get(cls, state):
-        keyboard = k.Remove.get()
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
             "text": t.CreateNewHero.get_template(),
-            "keyboard": keyboard
+            "keyboard": k.Remove.get()
         }
 
 
-class ViewInnFireSalamander(BaseAnswer):
+class HeroIsNotNew(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.ViewInnFireSalamander.get_template(),
-            "keyboard": k.InnKeyboard.get()
+            "text": t.HeroIsNotNew.get_template(),
+            "keyboard": k.Default.get()
         }
 
 
-class ViewInnFluffyPaws(BaseAnswer):
+class ThereIsNotHero(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.ViewInnFluffyPaws.get_template(),
-            "keyboard": k.InnKeyboard.get()
+            "text": t.ThereIsNotHero.get_template(),
+            "keyboard": k.Remove.get()
         }
 
 
-class ViewInnDancingHorse(BaseAnswer):
+class NewHeroIsNotUnique(BaseAnswer):
     @classmethod
     def _get(cls, state):
         return {
             "chat_id": state["id"],
             "message_type": Types.TEXT_MESSAGE,
-            "text": t.ViewInnDancingHorse.get_template(),
-            "keyboard": k.InnKeyboard.get()
-        }
-
-
-class ViewInnMoonRoad(BaseAnswer):
-    @classmethod
-    def _get(cls, state):
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": t.ViewInnMoonRoad.get_template(),
-            "keyboard": k.InnKeyboard.get()
-        }
-
-
-class ViewSelectInn(BaseAnswer):
-    @classmethod
-    def _get(cls, state):
-        return {
-            "chat_id": state["id"],
-            "message_type": Types.TEXT_MESSAGE,
-            "text": t.ViewSelectInn.get_template(),
-            "keyboard": k.InnKeyboard.get()
+            "text": t.NewHeroIsNotUnique.get_template(),
+            "keyboard": k.Remove.get()
         }

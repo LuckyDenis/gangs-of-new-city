@@ -52,8 +52,8 @@ class UserIsReturnKeyboard:
             resize_keyboard=True,
             one_time_keyboard=False
         ).row(
-            KeyboardButton(_("{i_inn} Inn").format(
-                i_inn=ECmds.INN.mk()))
+            KeyboardButton(_("{i_map} Map").format(
+                i_map=ECmds.MAP.mk()))
         )
 
 
@@ -66,6 +66,18 @@ class NewUserIsNotAcceptKeyboard:
         ).row(
             KeyboardButton(_("{i_accept} Accept").format(
                 i_accept=ECmds.FACCEPT.mk()))
+        )
+
+
+class UserIsAcceptKeyboard:
+    @staticmethod
+    def get():
+        return ReplyKeyboardMarkup(
+            resize_keyboard=True,
+            one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_map} Map").format(
+                i_map=ECmds.MAP.mk()))
         )
 
 
@@ -100,12 +112,16 @@ class LanguagesKeyboard:
         )
 
 
-class InnKeyboard:
+class Default:
     @staticmethod
     def get():
         return ReplyKeyboardMarkup(
             resize_keyboard=True,
             one_time_keyboard=False
+        ).row(
+            KeyboardButton(_("{i_map} Map").format(
+                i_map=ECmds.MAP.mk()
+            ))
         ).row(
             KeyboardButton(_("{i_hero} Hero").format(
                 i_hero=ECmds.HERO.mk()
@@ -115,22 +131,5 @@ class InnKeyboard:
             )),
             KeyboardButton(_("{i_setup} Setup").format(
                 i_setup=ECmds.SETUP.mk()
-            ))
-        )
-
-
-class SelectInnKeyboard:
-    @staticmethod
-    def get():
-        return ReplyKeyboardMarkup(
-            resize_keyboard=True,
-            one_time_keyboard=False
-        ).row(
-            KeyboardButton(_("{i_salamander} Fire Salamander").format(
-                i_hero=ECmds.HERO.mk()
-            ))
-        ).row(
-            KeyboardButton(_("{i_salamander} Fire Salamander").format(
-                i_hero=ECmds.HERO.mk()
             ))
         )

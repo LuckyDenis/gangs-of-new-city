@@ -177,8 +177,10 @@ class Hero(db.Model):
 
     @classmethod
     async def get_by_nick(cls, states):
-        return await cls.query.where(
-            sa.and_(
-                cls.nick == states["nick"]
-            )
+        return await db.select(
+            [cls.nick]
+        ).select_from(
+            cls
+        ).where(
+            cls.nick == states["nick"]
         ).gino.one_or_none()

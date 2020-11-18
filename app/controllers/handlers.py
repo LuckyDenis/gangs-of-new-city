@@ -9,6 +9,7 @@ from app.views import Types
 from app.configuration.settings import Setup
 from aiogram import Dispatcher
 from aiogram import Bot
+from aiogram import exceptions
 from aiogram.types import ParseMode
 from app.middlewares.storage import GinoMiddleware
 from app.middlewares.unique_id import UniqueIdMiddleware
@@ -128,6 +129,22 @@ async def cmd_hname(message: t.Message, unique_id):
     await done(answers)
 
 
+# ----- cmd: saccept ----- #
+@dp.message_handler(regexp=ECmds.SACCEPT.get())
+@dp.message_handler(commands=Cmds.SACCEPT.get())
+async def cmd_saccept(message: t.Message, unique_id):
+    data = {
+        "unique_id": unique_id,
+        "id": message.chat.id,
+        "datetime": message.date,
+    }
+
+    train = core.ViewLanguagesItinerary(data)
+    await train.move()
+    answers = train.get_answers()
+    await done(answers)
+
+
 # ----- cmd: lang ----- #
 @dp.message_handler(regexp=ECmds.LANG.get())
 @dp.message_handler(commands=Cmds.LANG.get())
@@ -166,7 +183,10 @@ async def done(answers):
         send_handler = send_handlers(
             answer["message_type"]
         )
-        await send_handler(answer)
+        try:
+            await send_handler(answer)
+        except exceptions.BadRequest as err:
+            print(err)
 
 
 def send_handlers(message_type):
@@ -180,5 +200,6 @@ async def send_text_message(answer):
     await bot.send_message(
         answer["chat_id"],
         answer["text"],
-        reply_markup=answer.get("keyboard")
+        reply_markup=answer.get("keyboard"),
+        disable_web_page_preview=answer.get("disable_web_page_preview")
     )

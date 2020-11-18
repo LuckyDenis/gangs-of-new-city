@@ -5,6 +5,10 @@ from .i18n import I18N
 from .icons import emojize
 
 
+LINK_LA = "https://ya.ru"
+LINK_PP = "https://ya.ru"
+
+
 i18n = I18N()
 _ = i18n.gettext_lazy
 
@@ -46,13 +50,15 @@ class NewUser(BaseMessage):
             "cmd_not_accept": Cmds.FNOTACCEPT.mk(),
             "i_cmd_accept": ECmds.FACCEPT.mk(),
             "i_cmd_not_accept": ECmds.FNOTACCEPT.mk(),
+            "link_pp": LINK_PP,
+            "link_la": LINK_LA
         }
 
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
-                     "To get to the city, you need to register."
-                     "Read these documents first. This is a privacy "
-                     "policy and a license agreement. To continue, "
-                     "send a command indicating consent.\n\n"
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
+                     "To enter our game world, you need to read "
+                     "and accept the documents below.\n\n "
+                     "<a href='{link_la}'>License Agreement</a>\n "
+                     "<a href='{link_pp}'>Privacy Policy</a>\n\n"
                      "{i_cmd_accept} To accept: {cmd_accept}\n"
                      "{i_cmd_not_accept} Not to accept: {cmd_not_accept}"
                      ).format(**format_data)
@@ -61,40 +67,54 @@ class NewUser(BaseMessage):
 
 
 class UserIsReturn(BaseMessage):
+    """
+    Если пользователь не новый.
+    """
     @staticmethod
     def get_template(states=None):
         format_data = {
-            "cmd_inn": Cmds.INN.mk(),
-            "i_cmd_inn": ECmds.INN.mk()
+            "cmd_map": Cmds.MAP.mk(),
+            "i_cmd_map": ECmds.MAP.mk()
         }
 
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
-                     "To get to the city, you need to register... "
-                     "Wait, I know you! It seems that with your "
-                     "return, we will have to increase patrols "
-                     "on the streets.\n\n"
-                     "Go to {i_cmd_inn} {cmd_inn}").format(**format_data)
+        template = _(":man_cook: [ <b>Innkeeper Bo</b> ]\n"
+                     "Decided to return. It is right. "
+                     "The road of adventure is waiting for you.\n\n"
+                     "Open the Map {i_cmd_map}: {cmd_map}"
+                     ).format(**format_data)
         return emojize(template)
 
 
 class NewUserIsNotAccept(BaseMessage):
+    """
+    Если новый пользователь не дает свое
+    согласие, то мы отдаем ему этот ответ.
+    """
     @staticmethod
     def get_template(states=None):
         format_data = {
             "cmd_accept": Cmds.FACCEPT.mk(),
-            "i_cmd_accept": ECmds.FACCEPT.mk()
+            "i_cmd_accept": ECmds.FACCEPT.mk(),
+            "link_la": LINK_LA,
+            "link_pp": LINK_PP
         }
 
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
-                     "Unfortunately, I cannot allow you to enter "
-                     "the city until you have read and accepted the "
-                     "license agreement and privacy policy.\n\n"
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
+                     "Unfortunately, until you give me permission, "
+                     "I can't let you through. You must read and "
+                     "accept the documents listed below.\n\n"
+                     "<a href='{link_la}'>License Agreement</a>\n"
+                     "<a href='{link_pp}'>Privacy Policy</a>\n\n"
                      "{i_cmd_accept} To accept: {cmd_accept}\n"
                      ).format(**format_data)
         return emojize(template)
 
 
 class NewUserIsAccept(BaseMessage):
+    """
+    После того как новый пользователь дал свое согласие,
+    предлагаем выбрать ему язык.
+    """
     @staticmethod
     def get_template(states=None):
         format_data = {
@@ -104,7 +124,7 @@ class NewUserIsAccept(BaseMessage):
             "i_cmd_ru": ECmds.RU.mk()
         }
 
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
                      "Specify your preferred language.\n\n"
                      "{i_cmd_en} English: {cmd_fen}\n"
                      "{i_cmd_ru} Russian: {cmd_fru}"
@@ -112,7 +132,33 @@ class NewUserIsAccept(BaseMessage):
         return emojize(template)
 
 
+class UserIsAccept(BaseMessage):
+    """
+    Пользователь получает свободу перемещения
+    после того, как повторно дал согласие с
+    политокой конфидициальности и
+    пользовательского соглашения.
+    """
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_map": Cmds.MAP.mk(),
+            "i_cmd_map": ECmds.MAP.mk()
+        }
+
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
+                     "Everything is fine now. "
+                     "I won't keep you any longer.\n\n"
+                     "Open the {i_cmd_map} {cmd_map}"
+                     ).format(**format_data)
+        return emojize(template)
+
+
 class CreateNewHeroHint(BaseMessage):
+    """
+    Подсказка о том, какие требования к
+    нику героя.
+    """
     @staticmethod
     def get_template(states=None):
         template = _(":interrobang: [ <b> Hint </b>]\n"
@@ -121,20 +167,22 @@ class CreateNewHeroHint(BaseMessage):
                      "lowercase Latin letters, decimal digits, "
                      "a period, and underscores. The hero's name "
                      "must be between 5 and 20 characters long "
-                     "and unique."
-                     )
+                     "and unique.")
 
         return emojize(template)
 
 
 class CreateNewHero(BaseMessage):
+    """
+    Создание нового героя.
+    """
     @staticmethod
     def get_template(states=None):
         format_data = {
             "cmd_name": Cmds.HNAME.mk()
         }
 
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
                      "Great! Now tell me your name. To do "
                      "this, send {cmd_name} NickName."
                      ).format(**format_data)
@@ -143,15 +191,19 @@ class CreateNewHero(BaseMessage):
 
 
 class HeroNickIsNotCorrect(BaseMessage):
+    """
+    Сообщаем пользователю, что выбранный
+    ник для героя не проходит по ограничениям
+    """
     @staticmethod
     def get_template(states=None):
         format_data = {
             "cmd_name": Cmds.HNAME.mk(),
         }
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
                      "The selected hero name is not supported. "
                      "The hero's name can contain uppercase or "
-                     "lowercase Latin letters, decimal digits, "
+                     "lowercase latin letters, decimal digits, "
                      "a period, and underscores. The hero's name "
                      "must be between 5 and 20 characters long "
                      "and unique. To do this, send {cmd_name} NickName."
@@ -161,6 +213,10 @@ class HeroNickIsNotCorrect(BaseMessage):
 
 
 class ViewLanguages(BaseMessage):
+    """
+    Секция с языками для пользователя.
+    Рассположенна в разделе с настройками.
+    """
     @staticmethod
     def get_template(state=None):
         format_data = {
@@ -187,64 +243,80 @@ class ViewLanguages(BaseMessage):
 
 
 class UserRejectPolicy(BaseMessage):
+    """
+    Сообщаем пользователю, что у него нет
+    согласия с пользовательским соглашиением
+    и политикой конфидициальности.
+    """
     @staticmethod
     def get_template(states=None):
         format_data = {
             "cmd_accept": Cmds.SACCEPT.mk(),
-            "i_cmd_accept": ECmds.SACCEPT.mk()
+            "i_cmd_accept": ECmds.SACCEPT.mk(),
+            "link_la": LINK_LA,
+            "link_pp": LINK_PP
         }
 
         template = _(":guardsman: [ <b>Guardsman Verax</b> ]\n"
-                     "The user agreement and privacy policy "
-                     "may have been changed, or you did not "
-                     "give your consent. Please read these "
-                     "documents carefully.\n\n"
+                     "I'm sorry, I have to keep you. Our documents "
+                     "have changed or you have revoked your permission. "
+                     "In order to continue, you need to accept "
+                     "the documents below:\n\n"
+                     "<a href='{link_la}'>License Agreement</a>\n "
+                     "<a href='{link_pp}'>Privacy Policy</a>\n\n"
                      "{i_cmd_accept} To agree: {cmd_accept}\n"
                      ).format(**format_data)
         return emojize(template)
 
 
-class ViewInnFireSalamander(BaseMessage):
-    @staticmethod
-    def get_template(state=None):
-
-        template = _(":woman_genie: [<b>Jasmin</b>]"
-                     "Silent night...")
-
-        return emojize(template)
-
-
-class ViewInnFluffyPaws(BaseMessage):
-    @staticmethod
-    def get_template(state=None):
-        template = _(":smile_cat: [<b>Mr. John Wick</b>]"
-                     "Silent night...")
-
-        return emojize(template)
-
-
-class ViewInnDancingHorse(BaseMessage):
-    @staticmethod
-    def get_template(state=None):
-        template = _(":woman_fairy: [<b>Lady Jen</b>]"
-                     "Silent night...")
-
-        return emojize(template)
-
-
-class ViewInnMoonRoad(BaseMessage):
-    @staticmethod
-    def get_template(state=None):
-        template = _(":man_vampire: [<b>Sunny</b>]"
-                     "Silent night...")
-
-        return emojize(template)
-
-
-class ViewSelectInn(BaseMessage):
+class HeroIsNotNew(BaseMessage):
+    """
+    Герой уже существует у пользователя.
+    """
     @staticmethod
     def get_template(states=None):
-        template = _(":guardsman: [ <b>Guardsman Verax</b> ]"
-                     "Silent night...")
+        format_data = {
+            "cmd_map": Cmds.MAP.mk(),
+            "cmd_satchel": Cmds.SATCHEL.mk(),
+            "i_cmd_map": ECmds.MAP.mk(),
+            "i_cmd_satchel": ECmds.SATCHEL.mk()
+        }
 
+        template = _(":cloud: [ <b>Mysterious cloud</b> ]\n"
+                     "You already have a hero.\n\n"
+                     "Open the map {i_cmd_map}: {cmd_map}\n"
+                     "Open the satchel {i_cmd_satchel}: {cmd_satchel}\n"
+                     ).format(**format_data)
+        return emojize(template)
+
+
+class ThereIsNotHero(BaseMessage):
+    """
+    Герой не существует. Просим создать его.
+    """
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_hname": Cmds.HNAME.mk(),
+        }
+
+        template = _(":cloud: [ <b>Mysterious cloud</b> ]\n"
+                     "You don't have a hero yet. "
+                     "To find out how to create "
+                     "it send the command: {cmd_hname}"
+                     ).format(**format_data)
+        return emojize(template)
+
+
+class NewHeroIsNotUnique(BaseMessage):
+    """
+    Сообщение о том, что имя героя не униклаьное
+    """
+    @staticmethod
+    def get_template(states=None):
+        template = _(":cloud: [ <b>Mysterious cloud</b> ]\n"
+                     "This world already has a hero "
+                     "with that name. Please choose a "
+                     "different name."
+                     )
         return emojize(template)
