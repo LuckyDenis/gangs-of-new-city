@@ -210,3 +210,27 @@ class NewHeroIsNotUnique(BaseAnswer):
             "text": t.NewHeroIsNotUnique.get_template(),
             "keyboard": k.Remove.get()
         }
+
+
+class UserIsBlocked(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.UserIsBlocked.get_template(state),
+            "keyboard": k.Remove.get(),
+            "disable_web_page_preview": True
+        }
+
+
+class NewHeroCreate(BaseAnswer):
+    @classmethod
+    def _get(cls, state):
+        print("1", "-" * 80)
+        return {
+            "chat_id": state["id"],
+            "message_type": Types.TEXT_MESSAGE,
+            "text": t.NewHeroCreate.get_template(),
+            "keyboard": k.Default.get()
+        }

@@ -320,3 +320,50 @@ class NewHeroIsNotUnique(BaseMessage):
                      "different name."
                      )
         return emojize(template)
+
+
+class UserIsBlocked(BaseMessage):
+    """
+    Сообщаем о блокировки пользователя
+    """
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "unique_id": states["unique_id"],
+            "link_pp": LINK_PP,
+            "link_la": LINK_LA,
+            "tg": "--/--",
+            "email": "--/--"
+        }
+
+        template = _(":guardsman: [ <b>Knight Verax</b> ]\n"
+                     "Your account is blocked due to a violation "
+                     "of one or more of the provisions specified "
+                     "in the documents listed below.\n\n"
+                     "<a href='{link_la}'>License Agreement</a>\n"
+                     "<a href='{link_pp}'>Privacy Policy</a>\n\n"
+                     "For more information, please contact the project "
+                     "administration. message id: {unique_id}\n\n"
+                     "Contact:\n"
+                     "telegram: {tg}\n"
+                     "email: {email}"
+                     ).format(**format_data)
+        return emojize(template)
+
+
+class NewHeroCreate(BaseMessage):
+    @staticmethod
+    def get_template(states=None):
+        format_data = {
+            "cmd_map": Cmds.MAP.mk(),
+            "i_cmd_map": ECmds.MAP.mk()
+        }
+
+        template = _(":guardsman: [ <b>Knight Verax</b> ]"
+                     "It's all right now. I've marked the "
+                     "most important places for you on the "
+                     "map, so you won't get lost.\n\n"
+                     "Open the map {i_cmd_map}: {cmd_map}"
+                     ).format(**format_data)
+
+        return emojize(template)

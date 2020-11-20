@@ -18,8 +18,7 @@ def update_data(op):
         {"code": Languages.ENGLISH}
     ]
     colors = [
-        {"color": Gangs.RED},
-        {"color": Gangs.YELLOW},
+        {"color": Gangs.GREEN},
         {"color": Gangs.ORANGE}
     ]
     op.bulk_insert(Language, codes)

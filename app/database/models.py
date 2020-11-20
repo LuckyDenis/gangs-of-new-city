@@ -125,6 +125,112 @@ class Referral(db.Model):
     is_play = sa.Column(sa.Boolean(), default=False)
 
 
+class Wallet(db.Model):
+    __tablename__ = "wallet"
+
+    user = sa.Column(
+        sa.BigInteger(), sa.ForeignKey(
+            User.id, ondelete="CASCADE",
+            onupdate="CASCADE"
+        ), primary_key=True, index=True)
+
+    coins = sa.Column(
+        sa.BigInteger(), nullable=False,
+        default=0
+    )
+    gems = sa.Column(
+        sa.BigInteger(), nullable=False,
+        default=0
+    )
+
+    @classmethod
+    async def get(cls, states):
+        return await db.select(
+            [cls]
+        ).select_from(
+            cls
+        ).where(
+            cls.user == states["id"]
+        ).gino.one_or_none()
+
+
+class ItemType(db.Model):
+    __tablename__ = "item_type"
+    type = sa.Column(
+        sa.String(10), primary_key=True,
+        index=True
+    )
+
+
+class Item(db.Model):
+    __tablename__ = "item"
+    name = sa.Column(
+        sa.String(20), primary_key=True,
+        index=True, autoincrement=False
+    )
+    accuracy = sa.Column(
+        sa.Integer(), nullable=False, default=0)
+    strength = sa.Column(
+        sa.Integer(), nullable=False, default=0)
+    intellect = sa.Column(
+        sa.Integer(), nullable=False, default=0)
+    agility = sa.Column(
+        sa.Integer(), nullable=False, default=0)
+    type = sa.Column(
+        sa.String(10), sa.ForeignKey(
+            ItemType.type, ondelete="CASCADE",
+            onupdate="CASCADE"))
+
+
+class Area(db.Model):
+    __tablename__ = "area"
+
+    name = sa.Column(sa.String(10), primary_key=True, index=True)
+    orange = sa.Column(sa.BigInteger(), default=0)
+    green = sa.Column(sa.BigInteger(), default=0)
+
+
+class Loot(db.Model):
+    __tablename__ = "loot"
+
+    area = sa.Column(
+        sa.String(10), sa.ForeignKey(
+            Area.name, ondelete="CASCADE",
+            onupdate="CASCADE"
+        ), primary_key=True, index=True)
+    item = sa.Column(
+        sa.String(20), sa.ForeignKey(
+            Item.name, onupdate="CASCADE",
+            ondelete="CASCADE"
+        ), primary_key=True, index=True)
+    count = sa.Column(
+        sa.Integer(), default=1,
+        nullable=False
+    )
+    probability = sa.Column(
+        sa.Integer(), default=1,
+        nullable=False
+    )
+
+
+class Satchel(db.Model):
+    __tablename__ = "satchel"
+
+    user = sa.Column(
+        sa.BigInteger(), sa.ForeignKey(
+            User.id, ondelete="CASCADE", onupdate="CASCADE"
+        ), primary_key=True, index=True)
+    ceil_id = sa.Column(
+        sa.Integer(), primary_key=True, nullable=False,
+        index=True, autoincrement=False
+    )
+    item = sa.Column(sa.String(20), nullable=True, default=None)
+    count = sa.Column(sa.Integer(), nullable=False, default=0)
+    is_used = sa.Column(sa.Boolean(), nullable=False, default=False)
+    is_pick = sa.Column(sa.Boolean(), nullable=False, default=False)
+    count_pick = sa.Column(sa.Integer(), nullable=False, default=0)
+
+
 class Hero(db.Model):
     __tablename__ = "hero"
 
@@ -153,21 +259,34 @@ class Hero(db.Model):
 
     @classmethod
     async def create(cls, states):
-        await cls.insert().values(
-            user=states["id"],
-            nick=states["nick"],
-            gang=states["gang"],
-            level=states["level"],
-            health=states["health"],
-            mana=states["mana"],
-            stamina=states["stamina"],
-            max_health=states["max_health"],
-            max_mana=states["max_mana"],
-            max_stamina=states["max_stamina"],
-            accuracy=states["accuracy"],
-            intellect=states["intellect"],
-            agility=states["agility"]
-        ).gino.status()
+        async with db.transaction():
+            await cls.insert().values(
+                user=states["id"],
+                nick=states["nick"],
+                gang=states["gang"],
+                level=states["level"],
+                health=states["health"],
+                mana=states["mana"],
+                stamina=states["stamina"],
+                max_health=states["max_health"],
+                max_mana=states["max_mana"],
+                max_stamina=states["max_stamina"],
+                accuracy=states["accuracy"],
+                intellect=states["intellect"],
+                agility=states["agility"]
+            ).gino.status()
+
+            await Wallet.insert().values(
+                user=states["id"],
+                coins=states["coins"],
+                gems=states["gems"]
+            ).gino.status()
+
+            for i in range(1, states["satchel_size"] + 1):
+                await Satchel.insert().values(
+                    user=states["user"],
+                    ceil_id=i
+                )
 
     @classmethod
     async def get(cls, states):

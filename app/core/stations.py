@@ -361,12 +361,8 @@ class AddReferralDataSt(BaseSt):
     Обезаетельные данные:
         ['data']['id']
         ['states']['inviter']['id']
-    Добавленные данные: ['answers']['answer']
+    Добавленные данные: None
     """
-    @classmethod
-    def add_out_answers(cls, train):
-        train.answers = "сообщаем что дан боннус"
-
     @classmethod
     def query_data(cls, train):
         query_name = "add_referral_data"
@@ -389,7 +385,6 @@ class AddReferralDataSt(BaseSt):
         if train.exception:
             return Code.EMERGENCY_STOP
 
-        cls.add_out_answers(train)
         return Code.IS_OK
 
 
@@ -530,11 +525,18 @@ class IsUserBlockedSt(BaseSt):
 
     Контракт:
     Обязательные данные: ['states']['user']['is_blocked']
+                         ['data']['id']
+                         ['data']['unique_id']
     Добавленные данные: ['answers']['answer'] или None
     """
     @classmethod
     def add_out_answer(cls, train):
-        train.answers = "Пользователь заблокирован"
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"],
+            "unique_id": train.data["unique_id"]
+        }
+        train.answers = an.UserIsBlocked.get(state)
 
     @classmethod
     async def _traveled(cls, train):
@@ -625,16 +627,19 @@ class NewHeroCreateSt(BaseSt):
     Создаем нового героя.
 
     Контракт:
-    Обезательные данные:
-        ['data']['id']
-        ['data']['hero_nick']
-    Добавленные данные:
-        ['states']['new_hero']
-        ['answers']['answer']
+    Обезательные данные: ['data']['id']
+                         ['data']['hero_nick']
+                         ['states']['user']['language']
+    Добавленные данные: ['states']['new_hero']
+                        ['answers']['answer']
     """
     @classmethod
     def add_out_answers(cls, train):
-        train.answers = "создан новый герой"
+        state = {
+            "id": train.data["id"],
+            "language": train.states["user"]["language"]
+        }
+        train.answers = an.NewHeroCreate.get(state)
 
     @classmethod
     def query_data(cls, train):
