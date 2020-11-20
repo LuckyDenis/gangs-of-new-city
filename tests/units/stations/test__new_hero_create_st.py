@@ -6,11 +6,13 @@ from app.core.statuses import Statuses as Code
 from app.database.queries import Hero
 from tests.helpers.fake_executions import fake_execution_with_error
 from tests.helpers.fake_executions import fake_execution_empty
+from app.database.fixture import Languages
 
 
 @pytest.fixture()
 def up_train(train):
     train.data["hero_nick"] = "nick"
+    train.states["user"] = {"language": Languages.ENGLISH}
     return train
 
 

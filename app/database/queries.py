@@ -115,10 +115,13 @@ class Hero:
             "accuracy": d.HERO.ACCURACY,
             "strength": d.HERO.STRENGTH,
             "intellect": d.HERO.INTELLECT,
-            "agility": d.HERO.AGILITY
+            "agility": d.HERO.AGILITY,
+            "coins": d.WALLET.COINS,
+            "gems": d.WALLET.GEMS,
+            "satchel_size": d.SATCHEL.SIZE
         }
         await cls.model.create(states)
-        return query
+        return states
 
     @classmethod
     async def get_by_nick(cls, query):

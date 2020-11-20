@@ -14,3 +14,28 @@ class HERO:
     STRENGTH = 1
     INTELLECT = 1
     AGILITY = 1
+
+
+class WALLET:
+    COINS = 100
+    GEMS = 100
+
+
+class SATCHEL:
+    SIZE = 12
+
+
+class Area:
+    MOUNTAINS = "mountains"
+    FOREST = "forest"
+    SEA = "sea"
+    PRAIRIE = "prairie"
+    CANYON = "canyon"
+
+
+class ITEM_TYPE:
+    FOOT = "shoes"
+    LEGS = "pants"
+    BODY = "body"
+    RESOURCE = "resource"
+    WEAPON = "weapon"
